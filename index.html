@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulateur de Cuisine IA — ECOCUISINE</title>
+  <meta name="description" content="Visualisez votre future cuisine ECOCUISINE en 30 secondes. Uploadez une photo, choisissez un modèle, découvrez le résultat. Gratuit et sans engagement.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ========== RESET & BASE ========== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Rubik', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #333;
+      line-height: 1.6;
+      background: #fff;
+      overflow-x: hidden;
+    }
+    img { max-width: 100%; height: auto; display: block; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; font-family: inherit; }
+
+    /* ========== VARIABLES ========== */
+    :root {
+      --orange: #E8850A;
+      --orange-hover: #D47808;
+      --orange-light: #FFF3E0;
+      --anthracite: #3A3A3A;
+      --grey-dark: #444444;
+      --grey-mid: #666;
+      --grey-light: #F5F5F5;
+      --white: #FFFFFF;
+      --max-width: 1200px;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --shadow: 0 2px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    /* ========== UTILITY ========== */
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+    .text-center { text-align: center; }
+
+    /* ========== BUTTONS ========== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Rubik', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 16px 36px;
+      border-radius: var(--radius);
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn--primary {
+      background: var(--orange);
+      color: var(--white);
+      box-shadow: 0 4px 16px rgba(232,133,10,0.35);
+    }
+    .btn--primary:hover {
+      background: var(--orange-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(232,133,10,0.45);
+    }
+    .btn--outline {
+      background: transparent;
+      color: var(--orange);
+      border: 2px solid var(--orange);
+    }
+    .btn--outline:hover {
+      background: var(--orange);
+      color: var(--white);
+    }
+    .btn--white {
+      background: var(--white);
+      color: var(--orange);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .btn--white:hover {
+      background: #f5f5f5;
+      transform: translateY(-2px);
+    }
+    .btn--large {
+      font-size: 1.1rem;
+      padding: 18px 44px;
+    }
+    .btn--arrow::after { content: ' →'; }
+
+    /* ========== ANNOUNCEMENT BAR ========== */
+    .announcement-bar {
+      background: var(--orange);
+      color: var(--white);
+      text-align: center;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .announcement-bar strong { font-weight: 700; }
+
+    /* ========== HEADER ========== */
+    .header {
+      background: var(--white);
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.15);
+      transition: box-shadow 0.3s;
+    }
+    .header.scrolled {
+      box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+    }
+    .header__inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header__nav { display: flex; align-items: center; gap: 28px; }
+    .header__nav a {
+      color: var(--anthracite);
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .header__nav a:not(.btn)::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--orange);
+      transition: width 0.3s;
+    }
+    .header__nav a:not(.btn):hover { color: var(--orange); }
+    .header__nav a:not(.btn):hover::after { width: 100%; }
+    .header__cta { display: none; }
+
+    @media (min-width: 768px) {
+      .header__cta { display: inline-flex; font-size: 0.85rem !important; padding: 10px 24px !important; }
+    }
+    @media (max-width: 767px) {
+      .header__nav { display: none; }
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      background: var(--white);
+      padding: 48px 24px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero__inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    @media (min-width: 768px) {
+      .hero__inner { grid-template-columns: 1fr 1fr; gap: 48px; }
+      .hero { padding: 72px 24px 0; }
+    }
+    .hero__content { max-width: 560px; }
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--orange);
+      color: var(--white);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 4px;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .hero__title {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
+      font-weight: 900;
+      color: var(--anthracite);
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .hero__title span { color: var(--orange); }
+    .hero__subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      color: var(--grey-mid);
+      margin-bottom: 32px;
+      line-height: 1.7;
+    }
+
+    /* Upload Zone */
+    .upload-zone {
+      background: var(--white);
+      border: 3px dashed var(--orange);
+      border-radius: var(--radius-lg);
+      padding: 36px 28px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      background: var(--orange-light);
+      border-color: var(--orange-hover);
+      transform: scale(1.01);
+    }
+    .upload-zone__icon {
+      width: 72px;
+      height: 72px;
+      background: var(--orange);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .upload-zone__title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--anthracite);
+      margin-bottom: 6px;
+    }
+    .upload-zone__text {
+      font-size: 0.9rem;
+      color: var(--grey-mid);
+      margin-bottom: 20px;
+    }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* Hero Visual - Before/After */
+    .hero__visual {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+    .before-after {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: var(--grey-light);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .before-after__after {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .before-after__before {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+      clip-path: inset(0 50% 0 0);
+    }
+    .before-after__slider {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      background: var(--white);
+      cursor: ew-resize;
+      z-index: 2;
+      transform: translateX(-50%);
+    }
+    .before-after__handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 48px;
+      height: 48px;
+      background: var(--white);
+      border-radius: 50%;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s;
+    }
+    .before-after__handle:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    .before-after__label {
+      position: absolute;
+      bottom: 16px;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .before-after__label--before {
+      left: 16px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+    }
+    .before-after__label--after {
+      right: 16px;
+      background: var(--orange);
+      color: #fff;
+    }
+
+    /* Hero Reassurance */
+    .hero__reassurance {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 24px;
+      padding-bottom: 48px;
+    }
+    .hero__reassurance-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--anthracite);
+    }
+    .hero__reassurance-icon {
+      width: 28px;
+      height: 28px;
+      background: #E8F5E9;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ========== SECTION: STATS BAR ========== */
+    .stats-bar {
+      background: var(--orange);
+      padding: 40px 24px;
+    }
+    .stats-bar__inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      text-align: center;
+    }
+    @media (min-width: 768px) {
+      .stats-bar__inner { grid-template-columns: repeat(4, 1fr); }
+    }
+    .stat { color: var(--white); }
+    .stat__number {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat__label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.85;
+    }
+
+    /* ========== SECTION: HOW IT WORKS ========== */
+    .how-it-works {
+      padding: 80px 24px;
+      background: var(--white);
+    }
+    .how-it-works__header {
+      max-width: 600px;
+      margin-bottom: 56px;
+    }
+    .section-eyebrow {
+      display: inline-block;
+      background: var(--orange);
+      color: var(--white);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+    }
+    .section-eyebrow--outline {
+      background: transparent;
+      color: var(--orange);
+      border: 2px solid var(--orange);
+    }
+    .section-title {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      color: var(--anthracite);
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .section-title--white { color: var(--white); }
+    .section-title span { color: var(--orange); }
+    .section-subtitle {
+      font-size: 1.05rem;
+      color: var(--grey-mid);
+      line-height: 1.7;
+      max-width: 520px;
+    }
+    .section-subtitle--white { color: rgba(255,255,255,0.75); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    @media (min-width: 768px) {
+      .steps { grid-template-columns: repeat(3, 1fr); gap: 40px; }
+    }
+    .step {
+      position: relative;
+      padding: 32px 24px;
+      background: var(--grey-light);
+      border-radius: var(--radius-lg);
+      transition: transform 0.2s;
+    }
+    .step:hover { transform: translateY(-4px); }
+    .step__number {
+      width: 48px;
+      height: 48px;
+      background: var(--orange);
+      color: var(--white);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 20px;
+    }
+    .step__icon {
+      width: 56px;
+      height: 56px;
+      background: var(--orange-light);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .step__title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--anthracite);
+      margin-bottom: 8px;
+    }
+    .step__text {
+      font-size: 0.95rem;
+      color: var(--grey-mid);
+      line-height: 1.6;
+    }
+
+    .how-it-works__cta {
+      margin-top: 48px;
+    }
+
+    /* ========== SECTION: GAMME ========== */
+    .gamme {
+      padding: 80px 24px;
+      background: var(--grey-light);
+    }
+    .gamme__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 280px;
+      gap: 16px;
+    }
+    @media (max-width: 1024px) {
+      .gamme__grid { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 240px; }
+    }
+    @media (max-width: 767px) {
+      .gamme__grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 200px; gap: 10px; }
+    }
+    @media (max-width: 400px) {
+      .gamme__grid { grid-template-columns: 1fr; grid-auto-rows: 260px; }
+    }
+    /* Featured large cards */
+    .model-card--featured { grid-column: span 2; grid-row: span 2; }
+    @media (max-width: 767px) {
+      .model-card--featured { grid-column: span 2; grid-row: span 1; }
+    }
+    @media (max-width: 400px) {
+      .model-card--featured { grid-column: span 1; }
+    }
+    /* Tall cards */
+    .model-card--tall { grid-row: span 2; }
+    @media (max-width: 767px) {
+      .model-card--tall { grid-row: span 1; }
+    }
+
+    .model-card {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      background: #ddd;
+    }
+    .model-card__img {
+      position: absolute;
+      inset: 0;
+    }
+    .model-card__img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .model-card:hover .model-card__img img {
+      transform: scale(1.08);
+    }
+    .model-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 40%, transparent 60%);
+      z-index: 1;
+      transition: background 0.3s;
+    }
+    .model-card:hover .model-card__overlay {
+      background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.05) 70%);
+    }
+    .model-card__body {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .model-card__name {
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .model-card--featured .model-card__name {
+      font-size: 2rem;
+    }
+    .model-card__style {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .model-card__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--orange);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      transition: all 0.25s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    .model-card:hover .model-card__btn {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .model-card__btn:hover { background: var(--orange-hover); }
+    @media (max-width: 767px) {
+      .model-card__btn { opacity: 1; transform: none; font-size: 0.7rem; padding: 6px 12px; }
+      .model-card__name { font-size: 1.1rem; }
+      .model-card--featured .model-card__name { font-size: 1.3rem; }
+      .model-card__body { padding: 14px; }
+    }
+
+    /* ========== SECTION: TESTIMONIALS ========== */
+    .testimonials {
+      padding: 80px 24px;
+      background: var(--white);
+    }
+    .testimonials__header {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 48px;
+    }
+    @media (min-width: 768px) {
+      .testimonials__header { grid-template-columns: 1fr auto; }
+    }
+    .testimonials__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    @media (min-width: 768px) {
+      .testimonials__grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .testimonial {
+      background: var(--grey-light);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      border-left: 4px solid var(--orange);
+      transition: transform 0.2s;
+    }
+    .testimonial:hover { transform: translateY(-4px); }
+    .testimonial__stars {
+      color: var(--orange);
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+    .testimonial__quote {
+      font-size: 0.95rem;
+      color: var(--anthracite);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .testimonial__author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .testimonial__avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--orange);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--white);
+      font-size: 1rem;
+    }
+    .testimonial__name {
+      font-weight: 700;
+      color: var(--anthracite);
+      font-size: 0.9rem;
+    }
+    .testimonial__location {
+      font-size: 0.8rem;
+      color: var(--grey-mid);
+    }
+    .testimonial__model {
+      font-size: 0.8rem;
+      color: var(--orange);
+      font-weight: 600;
+    }
+
+    /* Badges */
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 32px;
+      padding-top: 40px;
+      border-top: 2px solid #eee;
+    }
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--grey-mid);
+    }
+    .badge__icon {
+      width: 40px;
+      height: 40px;
+      background: var(--orange-light);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ========== SECTION: REASSURANCE ========== */
+    .reassurance {
+      padding: 56px 24px;
+      background: var(--orange);
+    }
+    .reassurance__grid {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    @media (min-width: 768px) {
+      .reassurance__grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .reassurance__grid { grid-template-columns: repeat(6, 1fr); }
+    }
+    .reassurance__item {
+      text-align: center;
+      color: var(--white);
+    }
+    .reassurance__icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+    }
+    .reassurance__label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    /* ========== SECTION: FINAL CTA ========== */
+    .final-cta {
+      padding: 80px 24px;
+      background: var(--anthracite);
+      position: relative;
+      overflow: hidden;
+    }
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 300px;
+      height: 300px;
+      background: var(--orange);
+      border-radius: 50%;
+      opacity: 0.08;
+    }
+    .final-cta__inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    @media (min-width: 768px) {
+      .final-cta__inner { grid-template-columns: 1fr 1fr; }
+    }
+    .final-cta .upload-zone {
+      background: rgba(255,255,255,0.03);
+      border-color: var(--orange);
+    }
+    .final-cta .upload-zone:hover {
+      background: rgba(232,133,10,0.08);
+    }
+    .final-cta .upload-zone__title { color: var(--white); }
+    .final-cta .upload-zone__text { color: rgba(255,255,255,0.5); }
+    .final-cta__alt {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.9rem;
+      margin-top: 20px;
+    }
+    .final-cta__alt a {
+      color: var(--orange);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 600;
+    }
+    .final-cta__features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .final-cta__feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+
+    /* ========== FOOTER ========== */
+    .footer {
+      background: #222;
+      padding: 48px 24px 24px;
+      color: rgba(255,255,255,0.5);
+    }
+    .footer__inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    @media (min-width: 768px) {
+      .footer__inner { grid-template-columns: 1.5fr 1fr 1fr 1fr; }
+    }
+    .footer__col h4 {
+      color: var(--white);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .footer__col ul { list-style: none; }
+    .footer__col li { margin-bottom: 8px; }
+    .footer__col a {
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .footer__col a:hover { color: var(--orange); }
+    .footer__social {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .footer__social a {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .footer__social a:hover { background: var(--orange); }
+    .footer__bottom {
+      max-width: var(--max-width);
+      margin: 32px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.75rem;
+    }
+
+    /* ========== STICKY CTA MOBILE ========== */
+    .sticky-cta {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--anthracite);
+      padding: 12px 16px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+      z-index: 99;
+    }
+    .sticky-cta .btn { width: 100%; justify-content: center; }
+    @media (max-width: 767px) {
+      .sticky-cta.visible { display: block; }
+    }
+
+    /* ========== ANIMATIONS & MICRO-INTERACTIONS ========== */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .fade-in-delay-1 { transition-delay: 0.1s; }
+    .fade-in-delay-2 { transition-delay: 0.2s; }
+    .fade-in-delay-3 { transition-delay: 0.3s; }
+
+    /* Pulse animation on CTA */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 4px 16px rgba(232,133,10,0.35); }
+      50% { box-shadow: 0 4px 28px rgba(232,133,10,0.55); }
+    }
+    .btn--pulse { animation: pulse-glow 2.5s ease-in-out infinite; }
+    .btn--pulse:hover { animation: none; }
+
+    /* Upload zone shimmer */
+    @keyframes shimmer-border {
+      0% { border-color: var(--orange); }
+      50% { border-color: #FFB74D; }
+      100% { border-color: var(--orange); }
+    }
+    .upload-zone { animation: shimmer-border 3s ease-in-out infinite; }
+    .upload-zone:hover { animation: none; }
+
+    /* Stat counter pop */
+    @keyframes pop-in {
+      0% { transform: scale(0.8); opacity: 0; }
+      60% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .stat.visible .stat__number { animation: pop-in 0.5s ease-out forwards; }
+
+    /* Smooth underline grow on links */
+    .final-cta__alt a {
+      background-image: linear-gradient(var(--orange), var(--orange));
+      background-size: 0% 2px;
+      background-position: left bottom;
+      background-repeat: no-repeat;
+      transition: background-size 0.3s ease;
+      text-decoration: none !important;
+    }
+    .gamme__more a:hover,
+    .final-cta__alt a:hover {
+      background-size: 100% 2px;
+    }
+
+    /* Badge icon bounce on hover */
+    .badge:hover .badge__icon {
+      animation: pop-in 0.4s ease;
+    }
+    .reassurance__item:hover .reassurance__icon {
+      animation: pop-in 0.4s ease;
+    }
+
+    /* Step number rotate on hover */
+    .step:hover .step__number {
+      transform: rotate(-5deg) scale(1.1);
+      transition: transform 0.3s ease;
+    }
+
+    /* Testimonial quote mark */
+    .testimonial { position: relative; overflow: hidden; }
+    .testimonial::before {
+      content: '\201C';
+      position: absolute;
+      top: -8px;
+      right: 16px;
+      font-size: 6rem;
+      font-family: Georgia, serif;
+      color: var(--orange);
+      opacity: 0.08;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    /* ========== RESPONSIVE FIXES ========== */
+    @media (max-width: 767px) {
+      .hero { padding: 32px 16px 0; }
+      .hero__title { font-size: clamp(1.8rem, 8vw, 2.5rem); }
+      .hero__subtitle { font-size: 0.95rem; margin-bottom: 24px; }
+      .hero__reassurance { gap: 12px; padding-bottom: 32px; }
+      .hero__reassurance-item { font-size: 0.8rem; }
+      .upload-zone { padding: 24px 16px; }
+      .upload-zone__icon { width: 56px; height: 56px; }
+      .btn { padding: 14px 24px; font-size: 0.9rem; }
+      .btn--large { padding: 16px 28px; font-size: 1rem; }
+      .stats-bar { padding: 28px 16px; }
+      .stat__number { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+      .how-it-works, .gamme, .testimonials { padding: 56px 16px; }
+      .section-title { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+      .final-cta { padding: 56px 16px; }
+      .testimonial { padding: 20px; }
+      .testimonial__quote { font-size: 0.9rem; }
+      .badges { gap: 16px; }
+      .reassurance { padding: 40px 16px; }
+      .footer { padding: 40px 16px 20px; }
+      .footer__bottom { flex-direction: column; text-align: center; }
+      .sticky-cta { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+      .sticky-cta .btn { white-space: normal; font-size: 0.9rem; padding: 14px 20px; }
+    }
+    @media (max-width: 400px) {
+      .gamme__grid { grid-template-columns: 1fr; }
+    }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+    }
+    .modal__close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      font-size: 1.5rem;
+      color: var(--grey-mid);
+      line-height: 1;
+    }
+    .modal__icon {
+      width: 64px;
+      height: 64px;
+      background: #E8F5E9;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .modal__title {
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--anthracite);
+      margin-bottom: 8px;
+    }
+    .modal__text {
+      font-size: 0.95rem;
+      color: var(--grey-mid);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .modal__input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #ddd;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-family: 'Rubik', sans-serif;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .modal__input:focus {
+      outline: none;
+      border-color: var(--orange);
+    }
+    .modal__privacy {
+      font-size: 0.75rem;
+      color: var(--grey-mid);
+      margin-top: 12px;
+    }
+
+    /* ========== UPLOAD PREVIEW ========== */
+    .upload-preview {
+      display: none;
+      margin-top: 16px;
+    }
+    .upload-preview.active { display: block; }
+    .upload-preview img {
+      max-height: 160px;
+      margin: 0 auto;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .upload-preview__text {
+      font-size: 0.85rem;
+      color: #4CAF50;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    /* ========== PRIVACY LINE ========== */
+    .privacy-line {
+      text-align: center;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.85);
+      margin-top: 20px;
+    }
+    .privacy-line svg { vertical-align: middle; margin-right: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement Bar -->
+  <div class="announcement-bar">
+    <strong>En ce moment :</strong> jusqu'à 6 électroménagers offerts pour toute commande.
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header__inner">
+      <a href="#" class="logo">
+        <img src="assets/logos/logo-ecocuisine-white.png" alt="ECOCUISINE — La cuisine tout compris" style="height:40px;">
+      </a>
+      <nav class="header__nav">
+        <a href="#">Les cuisines</a>
+        <a href="#">Nos magasins</a>
+        <a href="#">Catalogue</a>
+        <a href="#hero" class="btn btn--primary header__cta">Simuler ma cuisine →</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================== SECTION 1: HERO ===================== -->
+  <section class="hero" id="hero">
+    <div class="hero__inner">
+      <div class="hero__content">
+        <div class="hero__badge">Nouveau — Simulateur IA</div>
+        <h1 class="hero__title fade-in">
+          Votre cuisine<br><span>prend vie</span><br>en 30 secondes.
+        </h1>
+        <p class="hero__subtitle fade-in fade-in-delay-1">
+          Uploadez une photo de votre espace. Notre simulateur applique les modèles ECOCUISINE directement chez vous. Gratuit, sans engagement.
+        </p>
+
+        <div class="upload-zone fade-in fade-in-delay-2" id="uploadZoneHero">
+          <input type="file" accept="image/*" capture="environment" id="fileInputHero">
+          <div class="upload-zone__icon">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#fff" stroke-width="2"/></svg>
+          </div>
+          <div class="upload-zone__title">Glissez une photo de votre cuisine</div>
+          <div class="upload-zone__text">ou cliquez pour parcourir vos fichiers</div>
+          <button class="btn btn--primary btn--pulse" type="button" onclick="document.getElementById('fileInputHero').click()">
+            Lancer la simulation →
+          </button>
+          <div class="upload-preview" id="previewHero">
+            <img id="previewImgHero" src="" alt="Aperçu">
+            <div class="upload-preview__text">✓ Photo chargée avec succès</div>
+          </div>
+        </div>
+
+        <div class="hero__reassurance">
+          <div class="hero__reassurance-item">
+            <div class="hero__reassurance-icon">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            Gratuit
+          </div>
+          <div class="hero__reassurance-item">
+            <div class="hero__reassurance-icon">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            Sans inscription
+          </div>
+          <div class="hero__reassurance-item">
+            <div class="hero__reassurance-icon">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            Résultat en 30s
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__visual fade-in fade-in-delay-2">
+        <div class="before-after" id="heroBeforeAfter">
+          <!-- After image (full background) -->
+          <img class="before-after__after" src="assets/images/cuisine-apres.png" alt="Après — Cuisine transformée ECOCUISINE">
+          <!-- Before image (clipped via clip-path) -->
+          <img class="before-after__before" id="beforeImg" src="assets/images/cuisine-avant.webp" alt="Avant — Cuisine originale">
+          <!-- Slider handle -->
+          <div class="before-after__slider" id="baSlider">
+            <div class="before-after__handle">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M8 4l-6 8 6 8M16 4l6 8-6 8" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <span class="before-after__label before-after__label--before">Avant</span>
+          <span class="before-after__label before-after__label--after">Après</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== STATS BAR ===================== -->
+  <div class="stats-bar">
+    <div class="stats-bar__inner">
+      <div class="stat fade-in">
+        <div class="stat__number">12 437</div>
+        <div class="stat__label">Simulations réalisées</div>
+      </div>
+      <div class="stat fade-in fade-in-delay-1">
+        <div class="stat__number">23</div>
+        <div class="stat__label">Modèles disponibles</div>
+      </div>
+      <div class="stat fade-in fade-in-delay-2">
+        <div class="stat__number">30s</div>
+        <div class="stat__label">Pour un résultat</div>
+      </div>
+      <div class="stat fade-in fade-in-delay-3">
+        <div class="stat__number">2 460€</div>
+        <div class="stat__label">Prix de départ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 2: COMMENT ÇA MARCHE ===================== -->
+  <section class="how-it-works" id="comment-ca-marche">
+    <div class="container">
+      <div class="how-it-works__header fade-in">
+        <div class="section-eyebrow">3 étapes</div>
+        <h2 class="section-title">Comment ça<br><span>marche ?</span></h2>
+        <p class="section-subtitle">Pas besoin de compétences techniques. Pas besoin de compte. Juste une photo.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step fade-in">
+          <div class="step__number">1</div>
+          <div class="step__icon">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#E8850A" stroke-width="1.5"/><circle cx="12" cy="13" r="4" stroke="#E8850A" stroke-width="1.5"/></svg>
+          </div>
+          <h3 class="step__title">Photographiez</h3>
+          <p class="step__text">Prenez en photo votre cuisine actuelle ou l'espace à aménager.</p>
+        </div>
+
+        <div class="step fade-in fade-in-delay-1">
+          <div class="step__number">2</div>
+          <div class="step__icon">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#E8850A" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#E8850A" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#E8850A" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="#E8850A" stroke-width="1.5"/></svg>
+          </div>
+          <h3 class="step__title">Choisissez</h3>
+          <p class="step__text">Sélectionnez un modèle, un style ou une couleur dans notre gamme.</p>
+        </div>
+
+        <div class="step fade-in fade-in-delay-2">
+          <div class="step__number">3</div>
+          <div class="step__icon">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="#E8850A" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#E8850A" stroke-width="1.5"/></svg>
+          </div>
+          <h3 class="step__title">Visualisez</h3>
+          <p class="step__text">L'IA génère le rendu de votre cuisine équipée ECOCUISINE.</p>
+        </div>
+      </div>
+
+      <div class="how-it-works__cta text-center">
+        <a href="#hero" class="btn btn--primary btn--large">Essayer maintenant →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 3: LA GAMME — 23 MODÈLES ===================== -->
+  <section class="gamme" id="gamme">
+    <div class="container">
+      <div style="margin-bottom:48px;" class="fade-in">
+        <div class="section-eyebrow">La gamme</div>
+        <h2 class="section-title">23 modèles. 7 styles.<br><span>Votre cuisine sur-mesure à prix éco.</span></h2>
+        <p class="section-subtitle">Choisissez un modèle et simulez-le directement dans votre espace.</p>
+      </div>
+
+      <div class="gamme__grid" id="gammeGrid">
+        <!-- Row 1: Featured Ecosmart + 2 regular -->
+        <div class="model-card model-card--featured fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/257-1.jpg" alt="Cuisine Ecosmart"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Ecosmart</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/251-1.jpg" alt="Cuisine Mira"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Mira</div>
+            <div class="model-card__style">Mat / Intemporel</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/258-1.jpg" alt="Cuisine Pulse"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Pulse</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/246-1.jpg" alt="Cuisine Atelier"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Atelier</div>
+            <div class="model-card__style">Industriel</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/191-1.jpg" alt="Cuisine Cosy"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Cosy</div>
+            <div class="model-card__style">Bois</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/247-1.jpg" alt="Cuisine Emotion"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Emotion</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card model-card--tall fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/218-1.jpg" alt="Cuisine Frame"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Frame</div>
+            <div class="model-card__style">Scandinave / Intemporel</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/219-1.jpg" alt="Cuisine Hydra"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Hydra</div>
+            <div class="model-card__style">Mat / Scandinave</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/248-1.jpg" alt="Cuisine Idea"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Idea</div>
+            <div class="model-card__style">Brillant</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/223-1.jpg" alt="Cuisine Innova"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Innova</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/249-1.jpg" alt="Cuisine Intensa"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Intensa</div>
+            <div class="model-card__style">Brillant</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+
+        <!-- Featured Hydra wide -->
+        <div class="model-card model-card--featured fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/46-1.jpg" alt="Cuisine Linea"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Linea</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/226-1.jpg" alt="Cuisine Matéria"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Matéria</div>
+            <div class="model-card__style">Bois</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/250-1.jpg" alt="Cuisine Novia"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Novia</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+
+        <!-- More models -->
+        <div class="model-card model-card--tall fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/231-1.jpg" alt="Cuisine Phenix"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Phenix</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/118-1.jpg" alt="Cuisine Pietra"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Pietra</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/240-1.jpg" alt="Cuisine Quadra"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Quadra</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/149-1.jpg" alt="Cuisine Quercia"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Quercia</div>
+            <div class="model-card__style">Bois</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+
+        <!-- Last row -->
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/132-1.jpg" alt="Cuisine Sygma"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Sygma</div>
+            <div class="model-card__style">Mat</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/39-1.jpg" alt="Cuisine Systema"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Systema</div>
+            <div class="model-card__style">Brillant</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/10-1.jpg" alt="Cuisine Urban"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Urban</div>
+            <div class="model-card__style">Mat / Bois</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/175-1.jpg" alt="Cuisine Wave"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Wave</div>
+            <div class="model-card__style">Brillant</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+        <div class="model-card model-card--featured fade-in" onclick="scrollToUpload()">
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/185-1.jpg" alt="Cuisine Wood"></div>
+          <div class="model-card__overlay"></div>
+          <div class="model-card__body">
+            <div class="model-card__name">Wood</div>
+            <div class="model-card__style">Bois</div>
+            <button class="model-card__btn">Simuler →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center" style="margin-top:40px;">
+        <a href="#hero" class="btn btn--primary btn--large">Lancez la simulation →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 5: TÉMOIGNAGES ===================== -->
+  <section class="testimonials" id="temoignages">
+    <div class="container">
+      <div class="testimonials__header">
+        <div class="fade-in">
+          <div class="section-eyebrow">Témoignages</div>
+          <h2 class="section-title">Ils se sont projetés<br><span>grâce au simulateur.</span></h2>
+          <p class="section-subtitle">De la simulation à la visite en magasin.</p>
+        </div>
+        <div class="fade-in">
+          <a href="#hero" class="btn btn--outline">Essayer à votre tour →</a>
+        </div>
+      </div>
+
+      <div class="testimonials__grid">
+        <div class="testimonial fade-in">
+          <div class="testimonial__stars">★★★★★</div>
+          <p class="testimonial__quote">
+            « J'hésitais entre deux modèles. En voyant le rendu sur ma cuisine, le choix est devenu évident. On a commandé le modèle Hydra en bleu la semaine suivante. »
+          </p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">S</div>
+            <div>
+              <div class="testimonial__name">Sophie</div>
+              <div class="testimonial__location">Nantes</div>
+              <div class="testimonial__model">Modèle Hydra — Bleu</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial fade-in fade-in-delay-1">
+          <div class="testimonial__stars">★★★★★</div>
+          <p class="testimonial__quote">
+            « On ne pensait pas que l'espace pouvait rendre comme ça. J'ai montré le résultat à mon mari le soir même. Le lendemain, on allait en magasin. »
+          </p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">M</div>
+            <div>
+              <div class="testimonial__name">Marie</div>
+              <div class="testimonial__location">Lyon</div>
+              <div class="testimonial__model">Modèle Cosy — Blanc</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial fade-in fade-in-delay-2">
+          <div class="testimonial__stars">★★★★★</div>
+          <p class="testimonial__quote">
+            « En 30 secondes, j'avais une idée précise du résultat. Ça m'a fait gagner un temps fou par rapport à imaginer le rendu à partir d'un catalogue. »
+          </p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">P</div>
+            <div>
+              <div class="testimonial__name">Philippe</div>
+              <div class="testimonial__location">Bordeaux</div>
+              <div class="testimonial__model">Modèle Phenix — Vert</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="badges fade-in">
+        <div class="badge">
+          <div class="badge__icon">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#E8850A"/></svg>
+          </div>
+          Palmarès Capital 2024
+        </div>
+        <div class="badge">
+          <div class="badge__icon">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#E8850A" stroke-width="1.5"/></svg>
+          </div>
+          Meilleures Enseignes
+        </div>
+        <div class="badge">
+          <div class="badge__icon">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#4CAF50" stroke-width="1.5"/><path d="M8 12l3 3 5-5" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          Éco-responsable
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 6: RÉASSURANCE ===================== -->
+  <section class="reassurance">
+    <div class="reassurance__grid">
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Qualité<br>allemande</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#fff" stroke-width="1.5"/><path d="M22 4L12 14.01l-3-3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="reassurance__label">Garantie<br>simple et efficace</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-6 0v4" stroke="#fff" stroke-width="1.5"/><rect x="5" y="9" width="14" height="12" rx="2" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Données<br>sécurisées</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Satisfaction<br>garantie</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#fff" stroke-width="1.5"/><circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.5"/><path d="M23 21v-2a4 4 0 00-3-3.87" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Service<br>d'experts</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#fff" stroke-width="1.5"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Label<br>éco-responsable</div>
+      </div>
+    </div>
+    <p class="privacy-line">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-6 0v4" stroke="#fff" stroke-width="2"/><rect x="5" y="9" width="14" height="12" rx="2" stroke="#fff" stroke-width="2"/></svg>
+      Vos photos ne sont utilisées que pour la simulation. Aucune donnée n'est conservée.
+    </p>
+  </section>
+
+  <!-- ===================== SECTION 7: CTA FINAL ===================== -->
+  <section class="final-cta" id="cta-final">
+    <div class="final-cta__inner">
+      <div>
+        <h2 class="section-title section-title--white fade-in" style="margin-bottom:16px;">
+          Prêt à voir votre cuisine<br><span>autrement ?</span>
+        </h2>
+        <p class="section-subtitle section-subtitle--white fade-in" style="margin-bottom:24px;">
+          Uploadez une photo et découvrez le résultat en 30 secondes.
+        </p>
+        <p style="color:rgba(255,255,255,0.4);font-size:0.85rem;margin-bottom:20px;" class="fade-in">Simulation gratuite · Sans engagement · Résultat immédiat</p>
+        <div class="final-cta__features fade-in">
+          <div class="final-cta__feature">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            23 modèles
+          </div>
+          <div class="final-cta__feature">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            7 styles
+          </div>
+          <div class="final-cta__feature">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            À partir de 2 460 €
+          </div>
+        </div>
+        <div class="final-cta__alt fade-in">
+          Vous préférez être accompagné ? <a href="#">Prenez RDV avec un cuisiniste →</a>
+        </div>
+      </div>
+
+      <div class="upload-zone fade-in" id="uploadZoneFinal">
+        <input type="file" accept="image/*" capture="environment" id="fileInputFinal">
+        <div class="upload-zone__icon">
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7 10l5 5 5-5M12 15V3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="upload-zone__title">Glissez une photo de votre cuisine</div>
+        <div class="upload-zone__text">ou cliquez pour parcourir vos fichiers</div>
+        <button class="btn btn--primary" type="button" onclick="document.getElementById('fileInputFinal').click()">
+          Lancer ma simulation →
+        </button>
+        <div class="upload-preview" id="previewFinal">
+          <img id="previewImgFinal" src="" alt="Aperçu">
+          <div class="upload-preview__text">✓ Photo chargée avec succès</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__col">
+        <div style="margin-bottom:16px;">
+          <img src="assets/logos/logo-ecocuisine-white.png" alt="ECOCUISINE — La cuisine tout compris" style="height:40px;">
+        </div>
+        <p style="font-size:0.85rem;line-height:1.6;margin-bottom:16px;">Design, écologie, fonctionnalité.<br>Votre cuisine tout compris à prix éco.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="Facebook">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </a>
+          <a href="#" aria-label="Instagram">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h4>Nos produits</h4>
+        <ul>
+          <li><a href="#">Les cuisines</a></li>
+          <li><a href="#">Les salles de bain</a></li>
+          <li><a href="#">Les rangements</a></li>
+          <li><a href="#">Catalogue</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Votre projet</h4>
+        <ul>
+          <li><a href="#">Simulateur IA</a></li>
+          <li><a href="#">Cuisine 3D</a></li>
+          <li><a href="#">Prendre RDV</a></li>
+          <li><a href="#">Votre projet</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>ECOCUISINE</h4>
+        <ul>
+          <li><a href="#">Nos magasins</a></li>
+          <li><a href="#">Qui sommes-nous</a></li>
+          <li><a href="#">Recrutement</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2024 ECOCUISINE — Tous droits réservés</span>
+      <span>
+        <a href="#">Mentions légales</a> · <a href="#">Politique de confidentialité</a> · <a href="#">CGV</a>
+      </span>
+    </div>
+  </footer>
+
+  <!-- Sticky CTA Mobile -->
+  <div class="sticky-cta" id="stickyCta">
+    <button class="btn btn--primary" onclick="scrollToUpload()">
+      Simuler ma cuisine →
+    </button>
+  </div>
+
+  <!-- Modal Email Capture -->
+  <div class="modal-overlay" id="emailModal">
+    <div class="modal">
+      <button class="modal__close" onclick="closeModal()">&times;</button>
+      <div class="modal__icon">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#4CAF50" stroke-width="2"/><path d="M22 4L12 14.01l-3-3" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3 class="modal__title">Photo bien reçue !</h3>
+      <p class="modal__text">Renseignez votre email pour recevoir le rendu de votre simulation. Nous ne partagerons jamais votre adresse.</p>
+      <input type="email" class="modal__input" placeholder="votre@email.com" id="emailInput">
+      <button class="btn btn--primary" style="width:100%;justify-content:center;" onclick="submitEmail()">
+        Voir ma cuisine transformée →
+      </button>
+      <p class="modal__privacy">En soumettant, vous acceptez notre politique de confidentialité. Aucun spam.</p>
+    </div>
+  </div>
+
+  <script>
+    // ========== Scroll to upload ==========
+    function scrollToUpload() {
+      document.getElementById('hero').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ========== Header scroll effect ==========
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+
+    // ========== Before/After Slider ==========
+    (function() {
+      const container = document.getElementById('heroBeforeAfter');
+      const beforeImg = document.getElementById('beforeImg');
+      const slider = document.getElementById('baSlider');
+      if (!container || !beforeImg || !slider) return;
+
+      let isDragging = false;
+
+      function updateSlider(x) {
+        const rect = container.getBoundingClientRect();
+        let pos = (x - rect.left) / rect.width;
+        pos = Math.max(0.02, Math.min(0.98, pos));
+        const pct = pos * 100;
+        beforeImg.style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
+        slider.style.left = pct + '%';
+      }
+
+      slider.addEventListener('mousedown', (e) => { isDragging = true; e.preventDefault(); });
+      container.addEventListener('mousedown', (e) => { isDragging = true; updateSlider(e.clientX); });
+      window.addEventListener('mousemove', (e) => { if (isDragging) updateSlider(e.clientX); });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+
+      // Touch support
+      slider.addEventListener('touchstart', (e) => { isDragging = true; e.preventDefault(); }, { passive: false });
+      container.addEventListener('touchstart', (e) => { isDragging = true; updateSlider(e.touches[0].clientX); });
+      window.addEventListener('touchmove', (e) => { if (isDragging) updateSlider(e.touches[0].clientX); }, { passive: true });
+      window.addEventListener('touchend', () => { isDragging = false; });
+    })();
+
+    // ========== File upload handling ==========
+    function handleFileUpload(inputId, previewId, previewImgId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      const previewImg = document.getElementById(previewImgId);
+
+      input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = function(ev) {
+            previewImg.src = ev.target.result;
+            preview.classList.add('active');
+            setTimeout(() => {
+              document.getElementById('emailModal').classList.add('active');
+            }, 800);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    handleFileUpload('fileInputHero', 'previewHero', 'previewImgHero');
+    handleFileUpload('fileInputFinal', 'previewFinal', 'previewImgFinal');
+
+    // ========== Drag and drop ==========
+    document.querySelectorAll('.upload-zone').forEach(zone => {
+      ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, e => {
+          e.preventDefault();
+          zone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, e => {
+          e.preventDefault();
+          zone.classList.remove('dragover');
+        });
+      });
+      zone.addEventListener('drop', e => {
+        const input = zone.querySelector('input[type="file"]');
+        if (e.dataTransfer.files.length) {
+          input.files = e.dataTransfer.files;
+          input.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+
+    // ========== Modal ==========
+    function closeModal() {
+      document.getElementById('emailModal').classList.remove('active');
+    }
+
+    function submitEmail() {
+      const email = document.getElementById('emailInput').value;
+      if (email && email.includes('@')) {
+        closeModal();
+        alert('Merci ! Votre simulation est en cours de génération.');
+      }
+    }
+
+    // ========== Sticky CTA on mobile ==========
+    const stickyCta = document.getElementById('stickyCta');
+    const heroSection = document.getElementById('hero');
+
+    const stickyObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          stickyCta.classList.remove('visible');
+        } else {
+          stickyCta.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.3 });
+
+    stickyObserver.observe(heroSection);
+
+    // ========== Fade-in on scroll ==========
+    const fadeObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
+
+    // ========== Animated counter ==========
+    function animateCounters() {
+      document.querySelectorAll('.stat__number').forEach(el => {
+        const text = el.textContent.trim();
+        const match = text.match(/[\d\s]+/);
+        if (!match) return;
+        const target = parseInt(match[0].replace(/\s/g, ''));
+        if (isNaN(target) || target === 0) return;
+        const suffix = text.replace(match[0], '');
+        const prefix = text.indexOf(match[0]) > 0 ? text.substring(0, text.indexOf(match[0])) : '';
+        let current = 0;
+        const increment = Math.ceil(target / 60);
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            current = target;
+            clearInterval(timer);
+          }
+          el.textContent = prefix + current.toLocaleString('fr-FR') + suffix;
+        }, 20);
+      });
+    }
+
+    // Trigger counter animation when stats-bar is visible
+    const statsBar = document.querySelector('.stats-bar');
+    if (statsBar) {
+      const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCounters();
+            counterObserver.disconnect();
+          }
+        });
+      }, { threshold: 0.3 });
+      counterObserver.observe(statsBar);
+    }
+  </script>
+</body>
+</html>
