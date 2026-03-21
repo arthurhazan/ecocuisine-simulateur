@@ -5,6 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulateur de Cuisine IA — ECOCUISINE</title>
   <meta name="description" content="Visualisez votre future cuisine ECOCUISINE en 30 secondes. Uploadez une photo, choisissez un modèle, découvrez le résultat. Gratuit et sans engagement.">
+  <link rel="canonical" href="https://simulateur.ecocuisine.fr/">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://simulateur.ecocuisine.fr/">
+  <meta property="og:title" content="Simulateur de Cuisine IA — ECOCUISINE">
+  <meta property="og:description" content="Visualisez votre future cuisine ECOCUISINE en 30 secondes. Uploadez une photo, choisissez un modèle, découvrez le résultat. Gratuit et sans engagement.">
+  <meta property="og:image" content="https://simulateur.ecocuisine.fr/assets/images/cuisine-apres.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Simulateur de Cuisine IA — ECOCUISINE">
+  <meta name="twitter:description" content="Visualisez votre future cuisine ECOCUISINE en 30 secondes. Uploadez une photo, choisissez un modèle, découvrez le résultat. Gratuit et sans engagement.">
+  <meta name="twitter:image" content="https://simulateur.ecocuisine.fr/assets/images/cuisine-apres.png">
+
+  <!-- Schema.org WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Simulateur de Cuisine IA ECOCUISINE",
+    "url": "https://simulateur.ecocuisine.fr/",
+    "description": "Simulateur IA qui applique les modèles de cuisine ECOCUISINE sur une photo de votre espace. Résultat en 30 secondes, gratuit et sans engagement.",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR"
+    },
+    "provider": {
+      "@type": "Organization",
+      "name": "ECOCUISINE",
+      "url": "https://www.ecocuisine.fr/"
+    },
+    "featureList": [
+      "Simulation IA de cuisine à partir d'une photo",
+      "23 modèles de cuisine disponibles",
+      "7 styles de cuisine",
+      "Résultat en moins de 30 secondes",
+      "Téléchargement du rendu"
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1819,6 +1863,80 @@
       font-size: 0.8rem;
       padding: 12px 24px;
     }
+
+    /* ========== FAQ SECTION ========== */
+    .faq {
+      background: var(--grey-light);
+      padding: 80px 16px;
+    }
+    .faq__header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .faq__header .section-title { margin-bottom: 12px; }
+    .faq__list {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .faq__item {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .faq__question {
+      width: 100%;
+      background: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px;
+      font-family: 'Rubik', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--anthracite);
+      text-align: left;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .faq__question:hover { color: var(--orange); }
+    .faq__question[aria-expanded="true"] { color: var(--orange); }
+    .faq__icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--orange-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.3s;
+    }
+    .faq__question[aria-expanded="true"] .faq__icon {
+      background: var(--orange);
+      transform: rotate(45deg);
+    }
+    .faq__icon svg { display: block; }
+    .faq__question[aria-expanded="true"] .faq__icon svg path { stroke: #fff; }
+    .faq__answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.2s ease;
+    }
+    .faq__answer.open {
+      max-height: 400px;
+    }
+    .faq__answer-inner {
+      padding: 0 24px 20px;
+      font-size: 0.95rem;
+      color: var(--grey-mid);
+      line-height: 1.7;
+    }
   </style>
 </head>
 <body>
@@ -2394,6 +2512,159 @@
       </div>
     </div>
   </section>
+
+  <!-- ===================== SECTION 8: FAQ ===================== -->
+  <section class="faq" id="faq">
+    <div class="faq__header">
+      <h2 class="section-title">Questions<br><span>fréquentes</span></h2>
+      <p class="section-subtitle">Tout ce qu'il faut savoir sur le simulateur ECOCUISINE.</p>
+    </div>
+    <div class="faq__list">
+
+      <div class="faq__item">
+        <button class="faq__question" aria-expanded="false" onclick="toggleFaq(this)">
+          À quoi sert ce simulateur ?
+          <span class="faq__icon" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#E8850A" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq__answer">
+          <div class="faq__answer-inner">
+            Le simulateur ECOCUISINE vous permet de visualiser, en quelques secondes, à quoi ressemblerait votre cuisine avec l'un de nos modèles. Il suffit d'uploader une photo de votre espace actuel : notre IA applique le modèle choisi directement dans votre intérieur pour vous donner une projection réaliste.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq__item">
+        <button class="faq__question" aria-expanded="false" onclick="toggleFaq(this)">
+          Le rendu a-t-il une valeur contractuelle ?
+          <span class="faq__icon" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#E8850A" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq__answer">
+          <div class="faq__answer-inner">
+            Non. Le résultat généré est une projection IA à titre indicatif uniquement — il n'a aucune valeur contractuelle et ne constitue pas un devis, une offre commerciale ou une promesse de rendu final. Pour un projet sur-mesure fidèle à votre espace, nous vous invitons à prendre rendez-vous avec l'un de nos cuisinistes.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq__item">
+        <button class="faq__question" aria-expanded="false" onclick="toggleFaq(this)">
+          Comment fonctionne la simulation ?
+          <span class="faq__icon" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#E8850A" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq__answer">
+          <div class="faq__answer-inner">
+            C'est simple : (1) uploadez une photo de votre cuisine actuelle, (2) choisissez le modèle ECOCUISINE qui vous intéresse parmi les 23 disponibles, (3) notre IA génère un rendu en quelques secondes. Vous pouvez ensuite télécharger l'image ou en faire plusieurs avec d'autres modèles.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq__item">
+        <button class="faq__question" aria-expanded="false" onclick="toggleFaq(this)">
+          Est-ce gratuit ? Faut-il créer un compte ?
+          <span class="faq__icon" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#E8850A" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq__answer">
+          <div class="faq__answer-inner">
+            Oui, le simulateur est entièrement gratuit et sans engagement. Il n'est pas nécessaire de créer un compte pour lancer une simulation. Vous pouvez utiliser l'outil autant de fois que vous le souhaitez, avec autant de modèles différents.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq__item">
+        <button class="faq__question" aria-expanded="false" onclick="toggleFaq(this)">
+          Quels types de photos donnent les meilleurs résultats ?
+          <span class="faq__icon" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#E8850A" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq__answer">
+          <div class="faq__answer-inner">
+            Pour un rendu optimal, privilégiez une photo bien éclairée (lumière naturelle de préférence), prise de face ou légèrement en angle, avec les meubles de cuisine clairement visibles. Évitez les photos trop sombres, floues ou prises de très loin. Plus la cuisine est visible, meilleure sera la projection.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq__item">
+        <button class="faq__question" aria-expanded="false" onclick="toggleFaq(this)">
+          Puis-je télécharger ou partager le résultat ?
+          <span class="faq__icon" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#E8850A" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq__answer">
+          <div class="faq__answer-inner">
+            Oui, une fois la simulation générée, vous pouvez télécharger l'image directement depuis la page de résultat. Vous pouvez également la partager avec votre entourage ou votre cuisiniste ECOCUISINE pour initier votre projet.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FAQPage Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "À quoi sert ce simulateur ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Le simulateur ECOCUISINE vous permet de visualiser, en quelques secondes, à quoi ressemblerait votre cuisine avec l'un de nos modèles. Il suffit d'uploader une photo de votre espace actuel : notre IA applique le modèle choisi directement dans votre intérieur pour vous donner une projection réaliste."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Le rendu a-t-il une valeur contractuelle ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Non. Le résultat généré est une projection IA à titre indicatif uniquement — il n'a aucune valeur contractuelle et ne constitue pas un devis, une offre commerciale ou une promesse de rendu final. Pour un projet sur-mesure fidèle à votre espace, nous vous invitons à prendre rendez-vous avec l'un de nos cuisinistes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Comment fonctionne la simulation ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "C'est simple : (1) uploadez une photo de votre cuisine actuelle, (2) choisissez le modèle ECOCUISINE qui vous intéresse parmi les 23 disponibles, (3) notre IA génère un rendu en quelques secondes. Vous pouvez ensuite télécharger l'image ou en faire plusieurs avec d'autres modèles."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Est-ce gratuit ? Faut-il créer un compte ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Oui, le simulateur est entièrement gratuit et sans engagement. Il n'est pas nécessaire de créer un compte pour lancer une simulation. Vous pouvez utiliser l'outil autant de fois que vous le souhaitez, avec autant de modèles différents."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Quels types de photos donnent les meilleurs résultats ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pour un rendu optimal, privilégiez une photo bien éclairée (lumière naturelle de préférence), prise de face ou légèrement en angle, avec les meubles de cuisine clairement visibles. Évitez les photos trop sombres, floues ou prises de très loin. Plus la cuisine est visible, meilleure sera la projection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Puis-je télécharger ou partager le résultat ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Oui, une fois la simulation générée, vous pouvez télécharger l'image directement depuis la page de résultat. Vous pouvez également la partager avec votre entourage ou votre cuisiniste ECOCUISINE pour initier votre projet."
+        }
+      }
+    ]
+  }
+  </script>
 
   </main><!-- /landing-content -->
 
@@ -3150,6 +3421,22 @@
         });
       }, { threshold: 0.3 });
       counterObserver.observe(statsBar);
+    }
+
+    // ========== FAQ ACCORDION ==========
+    function toggleFaq(btn) {
+      const answer = btn.nextElementSibling;
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      // Close all others
+      document.querySelectorAll('.faq__question[aria-expanded="true"]').forEach(other => {
+        if (other !== btn) {
+          other.setAttribute('aria-expanded', 'false');
+          other.nextElementSibling.classList.remove('open');
+        }
+      });
+      // Toggle current
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      answer.classList.toggle('open', !isOpen);
     }
   </script>
 </body>
