@@ -1575,7 +1575,7 @@
 
     /* ========== SCREEN: RESULT ========== */
     .screen-result {
-      background: var(--grey-light);
+      background: var(--white);
       min-height: calc(100vh - 60px);
     }
     .result-hero {
@@ -1788,14 +1788,14 @@
   <!-- Header -->
   <header class="header">
     <div class="header__inner">
-      <a href="#" class="logo">
+      <a href="/" class="logo" onclick="event.preventDefault(); simGoBack(); window.scrollTo(0,0);">
         <img src="assets/logos/logo-ecocuisine-white.png" alt="ECOCUISINE — La cuisine tout compris" style="height:40px;">
       </a>
       <nav class="header__nav">
-        <a href="#">Les cuisines</a>
-        <a href="#">Nos magasins</a>
-        <a href="#">Catalogue</a>
-        <a href="#hero" class="btn btn--primary header__cta">Simuler ma cuisine →</a>
+        <a href="https://www.ecocuisine.fr/cuisines/" target="_blank">Les cuisines</a>
+        <a href="https://www.ecocuisine.fr/magasins/" target="_blank">Nos magasins</a>
+        <a href="https://www.ecocuisine.fr/catalogue/" target="_blank">Catalogue</a>
+        <a href="#hero" class="btn btn--primary header__cta" onclick="event.preventDefault(); simGoBack(); setTimeout(()=>document.getElementById('hero').scrollIntoView({behavior:'smooth'}),100);">Simuler ma cuisine →</a>
       </nav>
     </div>
   </header>
@@ -2330,7 +2330,7 @@
           </div>
         </div>
         <div class="final-cta__alt fade-in">
-          Vous préférez être accompagné ? <a href="#">Prenez RDV avec un cuisiniste →</a>
+          Vous préférez être accompagné ? <a href="https://www.ecocuisine.fr/magasins/" target="_blank">Prenez RDV avec un cuisiniste →</a>
         </div>
       </div>
 
@@ -2536,13 +2536,13 @@
         </div>
         <p style="font-size:0.85rem;line-height:1.6;margin-bottom:16px;">Design, écologie, fonctionnalité.<br>Votre cuisine tout compris à prix éco.</p>
         <div class="footer__social">
-          <a href="#" aria-label="Facebook">
+          <a href="https://www.facebook.com/Ecocuisine/" target="_blank" aria-label="Facebook">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
           </a>
-          <a href="#" aria-label="Instagram">
+          <a href="https://www.instagram.com/ecocuisine_officiel/" target="_blank" aria-label="Instagram">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
           </a>
-          <a href="#" aria-label="LinkedIn">
+          <a href="https://www.linkedin.com/company/ecocuisine/" target="_blank" aria-label="LinkedIn">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z"/></svg>
           </a>
         </div>
@@ -2550,35 +2550,35 @@
       <div class="footer__col">
         <h4>Nos produits</h4>
         <ul>
-          <li><a href="#">Les cuisines</a></li>
-          <li><a href="#">Les salles de bain</a></li>
-          <li><a href="#">Les rangements</a></li>
-          <li><a href="#">Catalogue</a></li>
+          <li><a href="https://www.ecocuisine.fr/cuisines/" target="_blank">Les cuisines</a></li>
+          <li><a href="https://www.ecocuisine.fr/salles-de-bain/" target="_blank">Les salles de bain</a></li>
+          <li><a href="https://www.ecocuisine.fr/rangements/" target="_blank">Les rangements</a></li>
+          <li><a href="https://www.ecocuisine.fr/catalogue/" target="_blank">Catalogue</a></li>
         </ul>
       </div>
       <div class="footer__col">
         <h4>Votre projet</h4>
         <ul>
-          <li><a href="#">Simulateur IA</a></li>
-          <li><a href="#">Cuisine 3D</a></li>
-          <li><a href="#">Prendre RDV</a></li>
-          <li><a href="#">Votre projet</a></li>
+          <li><a href="#hero" onclick="simGoBack();">Simulateur IA</a></li>
+          <li><a href="https://www.ecocuisine.fr/cuisine-3d/" target="_blank">Cuisine 3D</a></li>
+          <li><a href="https://www.ecocuisine.fr/magasins/" target="_blank">Prendre RDV</a></li>
+          <li><a href="https://www.ecocuisine.fr/votre-projet/" target="_blank">Votre projet</a></li>
         </ul>
       </div>
       <div class="footer__col">
         <h4>ECOCUISINE</h4>
         <ul>
-          <li><a href="#">Nos magasins</a></li>
-          <li><a href="#">Qui sommes-nous</a></li>
-          <li><a href="#">Recrutement</a></li>
-          <li><a href="#">Contact</a></li>
+          <li><a href="https://www.ecocuisine.fr/magasins/" target="_blank">Nos magasins</a></li>
+          <li><a href="https://www.ecocuisine.fr/qui-sommes-nous/" target="_blank">Qui sommes-nous</a></li>
+          <li><a href="https://www.ecocuisine.fr/recrutement/" target="_blank">Recrutement</a></li>
+          <li><a href="https://www.ecocuisine.fr/contact/" target="_blank">Contact</a></li>
         </ul>
       </div>
     </div>
     <div class="footer__bottom">
-      <span>© 2024 ECOCUISINE — Tous droits réservés</span>
+      <span>© 2025 ECOCUISINE — Tous droits réservés</span>
       <span>
-        <a href="#">Mentions légales</a> · <a href="#">Politique de confidentialité</a> · <a href="#">CGV</a>
+        <a href="https://www.ecocuisine.fr/mentions-legales/" target="_blank">Mentions légales</a> · <a href="https://www.ecocuisine.fr/politique-de-confidentialite/" target="_blank">Politique de confidentialité</a> · <a href="https://www.ecocuisine.fr/cgv/" target="_blank">CGV</a>
       </span>
     </div>
   </footer>
