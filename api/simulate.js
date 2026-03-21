@@ -32,7 +32,56 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing userPhoto or modelPhotoUrl' });
     }
 
-    // 1. Fetch the model reference photo from ecocuisine.fr
+    // 1. Validate that the user photo shows a kitchen or suitable interior space
+    const validationUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    try {
+      const validationResponse = await fetch(validationUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  mimeType: userPhotoMimeType || 'image/jpeg',
+                  data: userPhoto
+                }
+              },
+              {
+                text: `Analyse cette image et dis-moi si elle montre une cuisine, une salle à manger, un salon, ou tout autre espace intérieur d'un logement (maison ou appartement) qui pourrait accueillir une cuisine.
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code, exactement dans ce format :
+{"isKitchenOrInterior": true, "confidence": 0.95, "reason": "Description courte de ce que montre l'image"}`
+              }
+            ]
+          }],
+          generationConfig: {
+            responseMimeType: 'application/json'
+          }
+        })
+      });
+
+      if (validationResponse.ok) {
+        const validationResult = await validationResponse.json();
+        const validationText = validationResult.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (validationText) {
+          const validation = JSON.parse(validationText);
+          if (validation.isKitchenOrInterior === false && (validation.confidence ?? 0) >= 0.7) {
+            return res.status(422).json({
+              error: 'invalid_photo',
+              message: 'La photo ne semble pas montrer une cuisine ou un espace intérieur adapté.',
+              reason: validation.reason || ''
+            });
+          }
+        }
+      }
+    } catch (validationError) {
+      // Fail open: if validation crashes, proceed with image generation
+      console.warn('Photo validation failed, proceeding anyway:', validationError.message);
+    }
+
+    // 2. Fetch the model reference photo from ecocuisine.fr
     const modelResponse = await fetch(modelPhotoUrl);
     if (!modelResponse.ok) {
       return res.status(502).json({ error: 'Failed to fetch model photo' });
@@ -41,7 +90,7 @@ export default async function handler(req, res) {
     const modelBase64 = Buffer.from(modelBuffer).toString('base64');
     const modelMimeType = modelResponse.headers.get('content-type') || 'image/jpeg';
 
-    // 2. Construct the prompt
+    // 3. Construct the prompt
     const prompt = `Tu es un architecte d'intérieur expert en rénovation de cuisine, spécialisé dans les cuisines ECOCUISINE.
 
 MISSION : À partir de la photo de cette pièce (Image 1), génère une image photoréaliste montrant cette même pièce équipée avec le style de la cuisine de référence "${modelName}" (Image 2).
@@ -54,7 +103,7 @@ RÈGLES IMPÉRATIVES :
 5. PHOTORÉALISME : Le résultat doit être indiscernable d'une vraie photographie. L'éclairage doit être cohérent avec celui de la photo d'origine (lumière naturelle, ombres, reflets).
 6. FORMAT : L'image générée doit avoir exactement les mêmes proportions et la même résolution que l'image d'origine.`;
 
-    // 3. Call Gemini API
+    // 4. Call Gemini API
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`;
 
     const geminiResponse = await fetch(geminiUrl, {
@@ -99,7 +148,7 @@ RÈGLES IMPÉRATIVES :
 
     const result = await geminiResponse.json();
 
-    // 4. Extract the generated image
+    // 5. Extract the generated image
     const candidates = result.candidates;
     if (!candidates || candidates.length === 0) {
       return res.status(502).json({ error: 'No candidates in Gemini response', result });

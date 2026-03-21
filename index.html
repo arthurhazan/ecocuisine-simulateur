@@ -1573,6 +1573,49 @@
       font-weight: 700;
     }
 
+    /* Loading error state */
+    .loading-error {
+      display: none;
+      max-width: 560px;
+      width: 100%;
+      padding: 40px 24px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .loading-error.visible { display: block; }
+    .loading-error__icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 24px;
+      background: #FFF3E0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .loading-error__icon svg { color: var(--orange); }
+    .loading-error__title {
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--anthracite);
+      margin-bottom: 16px;
+    }
+    .loading-error__message {
+      font-size: 1rem;
+      color: var(--grey-mid);
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .loading-error__reason {
+      font-size: 0.85rem;
+      color: var(--orange);
+      font-style: italic;
+      margin-bottom: 32px;
+      min-height: 1.2em;
+    }
+
     /* ========== SCREEN: RESULT ========== */
     .screen-result {
       background: var(--white);
@@ -1816,7 +1859,7 @@
         </p>
 
         <div class="upload-zone fade-in fade-in-delay-2" id="uploadZoneHero">
-          <input type="file" accept="image/*" capture="environment" id="fileInputHero">
+          <input type="file" accept="image/*" id="fileInputHero">
           <div class="upload-zone__icon">
             <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#fff" stroke-width="2"/></svg>
           </div>
@@ -2335,7 +2378,7 @@
       </div>
 
       <div class="upload-zone fade-in" id="uploadZoneFinal">
-        <input type="file" accept="image/*" capture="environment" id="fileInputFinal">
+        <input type="file" accept="image/*" id="fileInputFinal">
         <div class="upload-zone__icon">
           <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7 10l5 5 5-5M12 15V3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
@@ -2406,7 +2449,19 @@
 
   <!-- SCREEN: Loading -->
   <div class="screen screen-loading" id="screenLoading">
-    <div class="loading-content">
+    <div class="loading-error" id="loadingError">
+      <div class="loading-error__icon">
+        <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2 class="loading-error__title">Photo non reconnue</h2>
+      <p class="loading-error__message">La photo fournie ne semble pas être une photo de cuisine ou d'intérieur. Veuillez réessayer avec une photo de votre cuisine ou de la pièce où vous souhaitez installer votre cuisine.</p>
+      <p class="loading-error__reason" id="loadingErrorReason"></p>
+      <button class="btn btn--primary" onclick="showInvalidPhotoError(false)">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Choisir une autre photo
+      </button>
+    </div>
+    <div class="loading-content" id="loadingContent">
       <div class="loading-content__icon">
         <div class="loading-spinner"></div>
       </div>
@@ -2862,6 +2917,10 @@
 
       showScreen('loading');
 
+      // Reset error panel state
+      document.getElementById('loadingError').classList.remove('visible');
+      document.getElementById('loadingContent').style.display = '';
+
       // Start loading animation
       const steps = [
         { text: 'Analyse de votre espace...', pct: 15 },
@@ -2910,6 +2969,12 @@
 
         if (!response.ok) {
           const err = await response.json();
+          if (err.error === 'invalid_photo') {
+            clearInterval(stepInterval);
+            clearInterval(tipInterval);
+            showInvalidPhotoError(true, err.reason);
+            return;
+          }
           throw new Error(err.message || err.error || 'Erreur serveur');
         }
 
@@ -2963,6 +3028,28 @@
       setTimeout(() => {
         initBeforeAfterSlider('resultBeforeAfter', 'resultBeforeImg', 'resultSlider');
       }, 100);
+    }
+
+    // ========== PHOTO VALIDATION ERROR ==========
+    function showInvalidPhotoError(show, reason) {
+      const errorPanel = document.getElementById('loadingError');
+      const loadingPanel = document.getElementById('loadingContent');
+      if (show) {
+        errorPanel.classList.add('visible');
+        loadingPanel.style.display = 'none';
+        document.getElementById('loadingErrorReason').textContent = reason || '';
+      } else {
+        errorPanel.classList.remove('visible');
+        loadingPanel.style.display = '';
+        // Reset upload state and go back to landing
+        simState.userPhotoBase64 = null;
+        simState.userPhotoMimeType = null;
+        simState.userPhotoDataUrl = null;
+        document.getElementById('fileInputHero').value = '';
+        document.getElementById('fileInputFinal').value = '';
+        showScreen('landing');
+        setTimeout(() => document.getElementById('hero').scrollIntoView({ behavior: 'smooth' }), 100);
+      }
     }
 
     // ========== NAVIGATION ==========
