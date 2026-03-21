@@ -34,6 +34,7 @@ export default async function handler(req, res) {
 
     // 1. Validate that the user photo shows a kitchen or suitable interior space
     const validationUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    console.log('[VALIDATION] Starting photo validation...');
     try {
       const validationResponse = await fetch(validationUrl, {
         method: 'POST',
@@ -49,10 +50,22 @@ export default async function handler(req, res) {
                 }
               },
               {
-                text: `Analyse cette image et dis-moi si elle montre une cuisine, une salle à manger, un salon, ou tout autre espace intérieur d'un logement (maison ou appartement) qui pourrait accueillir une cuisine.
+                text: `Tu es un classificateur strict. Analyse cette image.
 
-Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code, exactement dans ce format :
-{"isKitchenOrInterior": true, "confidence": 0.95, "reason": "Description courte de ce que montre l'image"}`
+Une image est VALIDE uniquement si elle montre PRINCIPALEMENT :
+- Une pièce vide ou meublée (cuisine, salle à manger, salon, couloir, salle de bain) avec des murs, un sol et un plafond visibles
+- Un espace architectural intérieur où l'on pourrait installer une cuisine
+
+Une image est INVALIDE si elle montre principalement :
+- Une personne, un visage, ou un portrait (même dans un intérieur)
+- Un animal
+- Un extérieur (jardin, rue, façade)
+- Un objet ou un meuble seul sans contexte architectural
+- Une capture d'écran, un dessin, un plan, un document
+- Toute chose qui n'est pas un espace architectural intérieur
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, exactement dans ce format :
+{"isSuitableSpace": true, "confidence": 0.95, "reason": "Description courte de ce que montre l'image"}`
               }
             ]
           }],
@@ -62,23 +75,63 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code,
         })
       });
 
+      console.log('[VALIDATION] Gemini response status:', validationResponse.status);
+
       if (validationResponse.ok) {
         const validationResult = await validationResponse.json();
+        console.log('[VALIDATION] Raw Gemini result:', JSON.stringify(validationResult?.candidates?.[0]?.content?.parts?.[0]));
+
         const validationText = validationResult.candidates?.[0]?.content?.parts?.[0]?.text;
+        console.log('[VALIDATION] Extracted text:', validationText);
+
         if (validationText) {
-          const validation = JSON.parse(validationText);
-          if (validation.isKitchenOrInterior === false && (validation.confidence ?? 0) >= 0.7) {
-            return res.status(422).json({
-              error: 'invalid_photo',
-              message: 'La photo ne semble pas montrer une cuisine ou un espace intérieur adapté.',
-              reason: validation.reason || ''
-            });
+          let validation;
+          try {
+            // Strip potential markdown code blocks just in case
+            const cleaned = validationText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            validation = JSON.parse(cleaned);
+            console.log('[VALIDATION] Parsed validation:', JSON.stringify(validation));
+          } catch (parseErr) {
+            console.error('[VALIDATION] JSON parse failed:', parseErr.message, '| raw text:', validationText);
+            // Fail open on parse error
           }
+
+          if (validation) {
+            const isSuitable = validation.isSuitableSpace;
+            const confidence = validation.confidence ?? 0;
+            console.log(`[VALIDATION] isSuitableSpace=${isSuitable}, confidence=${confidence}, reason="${validation.reason}"`);
+
+            // Reject if not a suitable space with confidence >= 0.5
+            if (isSuitable === false && confidence >= 0.5) {
+              console.log('[VALIDATION] REJECTED: not a suitable space');
+              return res.status(422).json({
+                error: 'invalid_photo',
+                message: 'La photo ne semble pas montrer une cuisine ou un espace intérieur adapté.',
+                reason: validation.reason || ''
+              });
+            }
+            // Also reject if confidence that it IS suitable is very low (< 0.4)
+            if (isSuitable === true && confidence < 0.4) {
+              console.log('[VALIDATION] REJECTED: low confidence that it is a suitable space');
+              return res.status(422).json({
+                error: 'invalid_photo',
+                message: 'La photo ne semble pas montrer une cuisine ou un espace intérieur adapté.',
+                reason: validation.reason || ''
+              });
+            }
+            console.log('[VALIDATION] PASSED: photo is a suitable space');
+          }
+        } else {
+          console.warn('[VALIDATION] No text in Gemini response, failing open');
         }
+      } else {
+        const errText = await validationResponse.text();
+        console.error('[VALIDATION] Gemini error:', validationResponse.status, errText);
+        // Fail open on API error
       }
     } catch (validationError) {
       // Fail open: if validation crashes, proceed with image generation
-      console.warn('Photo validation failed, proceeding anyway:', validationError.message);
+      console.error('[VALIDATION] Exception during validation, failing open:', validationError.message);
     }
 
     // 2. Fetch the model reference photo from ecocuisine.fr
