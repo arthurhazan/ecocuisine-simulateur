@@ -2453,8 +2453,8 @@
       <div class="loading-error__icon">
         <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <h2 class="loading-error__title">Photo non reconnue</h2>
-      <p class="loading-error__message">La photo fournie ne semble pas être une photo de cuisine ou d'intérieur. Veuillez réessayer avec une photo de votre cuisine ou de la pièce où vous souhaitez installer votre cuisine.</p>
+      <h2 class="loading-error__title">Cette photo ne semble pas être une cuisine</h2>
+      <p class="loading-error__message">Pour obtenir un résultat réaliste, envoyez une photo de votre cuisine actuelle ou de la pièce où vous souhaitez installer votre cuisine. Les photos de personnes, d'animaux, d'extérieurs ou d'objets isolés ne peuvent pas être utilisées.</p>
       <p class="loading-error__reason" id="loadingErrorReason"></p>
       <button class="btn btn--primary" onclick="showInvalidPhotoError(false)">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -3037,7 +3037,8 @@
       if (show) {
         errorPanel.classList.add('visible');
         loadingPanel.style.display = 'none';
-        document.getElementById('loadingErrorReason').textContent = reason || '';
+        const reasonEl = document.getElementById('loadingErrorReason');
+        reasonEl.textContent = reason ? `Détail : ${reason}` : '';
       } else {
         errorPanel.classList.remove('visible');
         loadingPanel.style.display = '';
