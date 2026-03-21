@@ -3056,18 +3056,18 @@
 
     // ========== HANDLE PHOTO UPLOAD → GO TO SELECTION ==========
     async function handlePhotoForSimulation(dataUrl) {
-      // Resize for API (max 1200px)
-      const resized = await resizeImage(dataUrl, 1200);
-      simState.userPhotoDataUrl = resized;
-      // Extract base64 and mimeType
-      const parts = resized.split(',');
+      // Compress for API (max 1500px, JPEG 0.85) — keep original for local preview
+      const compressed = await resizeImage(dataUrl, 1500);
+      simState.userPhotoDataUrl = dataUrl; // original quality for display
+      // Extract base64 and mimeType from compressed version
+      const parts = compressed.split(',');
       const mimeMatch = parts[0].match(/data:(.*?);/);
       simState.userPhotoMimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
       simState.userPhotoBase64 = parts[1];
       simState.selectedModel = null;
 
-      // Show user photo in selection screen
-      document.getElementById('selectionUserPhoto').src = resized;
+      // Show user photo in selection screen (original quality)
+      document.getElementById('selectionUserPhoto').src = dataUrl;
 
       // Reset selection state
       document.querySelectorAll('.model-select-card').forEach(c => c.classList.remove('selected'));
