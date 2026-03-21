@@ -6,6 +6,10 @@ export const config = {
   maxDuration: 60, // Allow up to 60s for image generation
 };
 
+// In-memory cache for model photos — persists across warm invocations on the same Vercel instance
+// Key: modelPhotoUrl, Value: { base64: string, mimeType: string }
+const modelPhotoCache = {};
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -81,14 +85,22 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code,
       console.warn('Photo validation failed, proceeding anyway:', validationError.message);
     }
 
-    // 2. Fetch the model reference photo from ecocuisine.fr
-    const modelResponse = await fetch(modelPhotoUrl);
-    if (!modelResponse.ok) {
-      return res.status(502).json({ error: 'Failed to fetch model photo' });
+    // 2. Fetch the model reference photo from ecocuisine.fr (with in-memory cache)
+    let modelBase64, modelMimeType;
+    if (modelPhotoCache[modelPhotoUrl]) {
+      console.log('[model-photo-cache] HIT:', modelPhotoUrl);
+      ({ base64: modelBase64, mimeType: modelMimeType } = modelPhotoCache[modelPhotoUrl]);
+    } else {
+      console.log('[model-photo-cache] MISS:', modelPhotoUrl);
+      const modelResponse = await fetch(modelPhotoUrl);
+      if (!modelResponse.ok) {
+        return res.status(502).json({ error: 'Failed to fetch model photo' });
+      }
+      const modelBuffer = await modelResponse.arrayBuffer();
+      modelBase64 = Buffer.from(modelBuffer).toString('base64');
+      modelMimeType = modelResponse.headers.get('content-type') || 'image/jpeg';
+      modelPhotoCache[modelPhotoUrl] = { base64: modelBase64, mimeType: modelMimeType };
     }
-    const modelBuffer = await modelResponse.arrayBuffer();
-    const modelBase64 = Buffer.from(modelBuffer).toString('base64');
-    const modelMimeType = modelResponse.headers.get('content-type') || 'image/jpeg';
 
     // 3. Construct the prompt
     const prompt = `Tu es un architecte d'intérieur expert en rénovation de cuisine, spécialisé dans les cuisines ECOCUISINE.
