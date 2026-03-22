@@ -1864,6 +1864,84 @@
       padding: 12px 24px;
     }
 
+    /* History section */
+    .result-history {
+      width: 100%;
+      max-width: 780px;
+      margin: 32px auto 0;
+      padding-top: 32px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .result-history__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .result-history__title {
+      font-family: 'Rubik', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--anthracite);
+    }
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .history-item {
+      position: relative;
+      background: var(--white);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.06);
+      overflow: hidden;
+      cursor: default;
+    }
+    .history-item__img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+    }
+    .history-item__info {
+      padding: 10px 12px 12px;
+    }
+    .history-item__name {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--anthracite);
+    }
+    .history-item__style {
+      font-size: 0.75rem;
+      color: var(--orange);
+      margin-top: 2px;
+    }
+    .history-item__date {
+      font-size: 0.72rem;
+      color: var(--grey-mid);
+      margin-top: 4px;
+    }
+    .history-item__delete {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.45);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .history-item:hover .history-item__delete { opacity: 1; }
+    @media (hover: none) { .history-item__delete { opacity: 1; } }
+
     /* Share buttons */
     .result-share {
       display: flex;
@@ -1901,6 +1979,7 @@
       margin-bottom: 48px;
     }
     .faq__header .section-title { margin-bottom: 12px; }
+    .faq__header .section-subtitle { margin: 0 auto; text-align: center; }
     .faq__list {
       max-width: 780px;
       margin: 0 auto;
@@ -2446,101 +2525,7 @@
     </div>
   </section>
 
-  <!-- ===================== SECTION 6: RÉASSURANCE ===================== -->
-  <section class="reassurance">
-    <div class="reassurance__grid">
-      <div class="reassurance__item fade-in">
-        <div class="reassurance__icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#fff" stroke-width="1.5"/></svg>
-        </div>
-        <div class="reassurance__label">Qualité<br>allemande</div>
-      </div>
-      <div class="reassurance__item fade-in">
-        <div class="reassurance__icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#fff" stroke-width="1.5"/><path d="M22 4L12 14.01l-3-3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        </div>
-        <div class="reassurance__label">Garantie<br>simple et efficace</div>
-      </div>
-      <div class="reassurance__item fade-in">
-        <div class="reassurance__icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-6 0v4" stroke="#fff" stroke-width="1.5"/><rect x="5" y="9" width="14" height="12" rx="2" stroke="#fff" stroke-width="1.5"/></svg>
-        </div>
-        <div class="reassurance__label">Données<br>sécurisées</div>
-      </div>
-      <div class="reassurance__item fade-in">
-        <div class="reassurance__icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#fff" stroke-width="1.5"/></svg>
-        </div>
-        <div class="reassurance__label">Satisfaction<br>garantie</div>
-      </div>
-      <div class="reassurance__item fade-in">
-        <div class="reassurance__icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#fff" stroke-width="1.5"/><circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.5"/><path d="M23 21v-2a4 4 0 00-3-3.87" stroke="#fff" stroke-width="1.5"/></svg>
-        </div>
-        <div class="reassurance__label">Service<br>d'experts</div>
-      </div>
-      <div class="reassurance__item fade-in">
-        <div class="reassurance__icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#fff" stroke-width="1.5"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="#fff" stroke-width="1.5"/></svg>
-        </div>
-        <div class="reassurance__label">Label<br>éco-responsable</div>
-      </div>
-    </div>
-    <p class="privacy-line">
-      <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-6 0v4" stroke="#fff" stroke-width="2"/><rect x="5" y="9" width="14" height="12" rx="2" stroke="#fff" stroke-width="2"/></svg>
-      Vos photos ne sont utilisées que pour la simulation. Aucune donnée n'est conservée.
-    </p>
-  </section>
-
-  <!-- ===================== SECTION 7: CTA FINAL ===================== -->
-  <section class="final-cta" id="cta-final">
-    <div class="final-cta__inner">
-      <div>
-        <h2 class="section-title section-title--white fade-in" style="margin-bottom:16px;">
-          Prêt à voir votre cuisine<br><span>autrement ?</span>
-        </h2>
-        <p class="section-subtitle section-subtitle--white fade-in" style="margin-bottom:24px;">
-          Uploadez une photo et découvrez le résultat en 30 secondes.
-        </p>
-        <p style="color:rgba(255,255,255,0.4);font-size:0.85rem;margin-bottom:20px;" class="fade-in">Simulation gratuite · Sans engagement · Résultat immédiat</p>
-        <div class="final-cta__features fade-in">
-          <div class="final-cta__feature">
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            23 modèles
-          </div>
-          <div class="final-cta__feature">
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            7 styles
-          </div>
-          <div class="final-cta__feature">
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            À partir de 2 460 €
-          </div>
-        </div>
-        <div class="final-cta__alt fade-in">
-          Vous préférez être accompagné ? <a href="https://www.ecocuisine.fr/magasins/" target="_blank">Prenez RDV avec un cuisiniste →</a>
-        </div>
-      </div>
-
-      <div class="upload-zone fade-in" id="uploadZoneFinal">
-        <input type="file" accept="image/*" id="fileInputFinal">
-        <div class="upload-zone__icon">
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7 10l5 5 5-5M12 15V3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="upload-zone__title">Glissez une photo de votre cuisine</div>
-        <div class="upload-zone__text">ou cliquez pour parcourir vos fichiers</div>
-        <button class="btn btn--primary" type="button" onclick="document.getElementById('fileInputFinal').click()">
-          Lancer ma simulation →
-        </button>
-        <div class="upload-preview" id="previewFinal">
-          <img id="previewImgFinal" src="" alt="Aperçu">
-          <div class="upload-preview__text">✓ Photo chargée avec succès</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== SECTION 8: FAQ ===================== -->
+  <!-- ===================== SECTION 6: FAQ ===================== -->
   <section class="faq" id="faq">
     <div class="faq__header">
       <h2 class="section-title">Questions<br><span>fréquentes</span></h2>
@@ -2632,6 +2617,100 @@
         </div>
       </div>
 
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 7: RÉASSURANCE ===================== -->
+  <section class="reassurance">
+    <div class="reassurance__grid">
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Qualité<br>allemande</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#fff" stroke-width="1.5"/><path d="M22 4L12 14.01l-3-3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="reassurance__label">Garantie<br>simple et efficace</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-6 0v4" stroke="#fff" stroke-width="1.5"/><rect x="5" y="9" width="14" height="12" rx="2" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Données<br>sécurisées</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Satisfaction<br>garantie</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#fff" stroke-width="1.5"/><circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.5"/><path d="M23 21v-2a4 4 0 00-3-3.87" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Service<br>d'experts</div>
+      </div>
+      <div class="reassurance__item fade-in">
+        <div class="reassurance__icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#fff" stroke-width="1.5"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="reassurance__label">Label<br>éco-responsable</div>
+      </div>
+    </div>
+    <p class="privacy-line">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-6 0v4" stroke="#fff" stroke-width="2"/><rect x="5" y="9" width="14" height="12" rx="2" stroke="#fff" stroke-width="2"/></svg>
+      Vos photos ne sont utilisées que pour la simulation. Aucune donnée n'est conservée.
+    </p>
+  </section>
+
+  <!-- ===================== SECTION 7: CTA FINAL ===================== -->
+  <section class="final-cta" id="cta-final">
+    <div class="final-cta__inner">
+      <div>
+        <h2 class="section-title section-title--white fade-in" style="margin-bottom:16px;">
+          Prêt à voir votre cuisine<br><span>autrement ?</span>
+        </h2>
+        <p class="section-subtitle section-subtitle--white fade-in" style="margin-bottom:24px;">
+          Uploadez une photo et découvrez le résultat en 30 secondes.
+        </p>
+        <p style="color:rgba(255,255,255,0.4);font-size:0.85rem;margin-bottom:20px;" class="fade-in">Simulation gratuite · Sans engagement · Résultat immédiat</p>
+        <div class="final-cta__features fade-in">
+          <div class="final-cta__feature">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            23 modèles
+          </div>
+          <div class="final-cta__feature">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            7 styles
+          </div>
+          <div class="final-cta__feature">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="#E8850A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            À partir de 2 460 €
+          </div>
+        </div>
+        <div class="final-cta__alt fade-in">
+          Vous préférez être accompagné ? <a href="https://www.ecocuisine.fr/magasins/" target="_blank">Prenez RDV avec un cuisiniste →</a>
+        </div>
+      </div>
+
+      <div class="upload-zone fade-in" id="uploadZoneFinal">
+        <input type="file" accept="image/*" id="fileInputFinal">
+        <div class="upload-zone__icon">
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7 10l5 5 5-5M12 15V3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="upload-zone__title">Glissez une photo de votre cuisine</div>
+        <div class="upload-zone__text">ou cliquez pour parcourir vos fichiers</div>
+        <button class="btn btn--primary" type="button" onclick="document.getElementById('fileInputFinal').click()">
+          Lancer ma simulation →
+        </button>
+        <div class="upload-preview" id="previewFinal">
+          <img id="previewImgFinal" src="" alt="Aperçu">
+          <div class="upload-preview__text">✓ Photo chargée avec succès</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -2888,6 +2967,14 @@
         <button class="btn btn--outline" onclick="simGoBack()">
           Nouvelle photo →
         </button>
+      </div>
+
+      <!-- Simulation history -->
+      <div class="result-history" id="resultHistory" style="display:none">
+        <div class="result-history__header">
+          <h3 class="result-history__title">Mes simulations récentes</h3>
+        </div>
+        <div class="history-grid" id="historyGrid"></div>
       </div>
     </div>
   </div>
@@ -3334,6 +3421,10 @@
 
       showScreen('result');
 
+      // Save to history and render it
+      saveToHistory();
+      renderHistory();
+
       // Initialize result slider after screen is visible
       setTimeout(() => {
         initBeforeAfterSlider('resultBeforeAfter', 'resultBeforeImg', 'resultSlider');
@@ -3403,18 +3494,108 @@
     }
 
     // ========== SHARE ==========
-    function shareWhatsApp() {
+    async function shareWithImage(platform) {
       const modelName = simState.selectedModel?.name || 'ECOCUISINE';
       const pageUrl = window.location.href;
-      const text = 'Regarde ce que donnerait notre cuisine avec le modèle ' + modelName + ' ECOCUISINE ! 🏠 ' + pageUrl;
-      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
+      const text = 'Regarde ce que donnerait ma cuisine avec le modèle ' + modelName + ' ECOCUISINE ! 🏠 ' + pageUrl;
+
+      // Try Web Share API with image (works on mobile Safari + Android Chrome)
+      if (simState.generatedImageDataUrl && navigator.canShare) {
+        try {
+          const res = await fetch(simState.generatedImageDataUrl);
+          const blob = await res.blob();
+          const file = new File([blob], 'ecocuisine-' + modelName + '.jpg', { type: blob.type });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], text });
+            return;
+          }
+        } catch (e) { /* fall through to URL-only */ }
+      }
+
+      // Fallback: URL-only share
+      if (platform === 'whatsapp') {
+        window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
+      } else {
+        window.open('sms:?body=' + encodeURIComponent(text));
+      }
     }
 
-    function shareSMS() {
-      const modelName = simState.selectedModel?.name || 'ECOCUISINE';
-      const pageUrl = window.location.href;
-      const body = 'Regarde ce que donnerait notre cuisine avec le modèle ' + modelName + ' ECOCUISINE ! 🏠 ' + pageUrl;
-      window.open('sms:?body=' + encodeURIComponent(body));
+    function shareWhatsApp() { shareWithImage('whatsapp'); }
+    function shareSMS() { shareWithImage('sms'); }
+
+    // ========== SIMULATION HISTORY (localStorage) ==========
+    const HISTORY_KEY = 'ecocuisine_history';
+    const HISTORY_MAX = 5;
+
+    function saveToHistory() {
+      const model = simState.selectedModel;
+      if (!simState.generatedImageDataUrl || !model) return;
+      // Generate compressed thumbnail (~400px wide, JPEG 0.72) to save localStorage space
+      const img = new Image();
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        const maxW = 400;
+        const ratio = Math.min(maxW / img.width, 1);
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        const thumb = canvas.toDataURL('image/jpeg', 0.72);
+        const entry = {
+          id: Date.now(),
+          timestamp: Date.now(),
+          modelName: model.name,
+          modelStyle: model.style,
+          thumb,
+        };
+        let history = [];
+        try { history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (e) {}
+        // Avoid duplicate for same model in same session
+        history = history.filter(e => e.modelName !== model.name);
+        history.unshift(entry);
+        if (history.length > HISTORY_MAX) history = history.slice(0, HISTORY_MAX);
+        try {
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        } catch (e) {
+          // Storage full — drop oldest and retry
+          history.pop();
+          try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (e2) {}
+        }
+        renderHistory();
+      };
+      img.src = simState.generatedImageDataUrl;
+    }
+
+    function loadHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (e) { return []; }
+    }
+
+    function deleteFromHistory(id) {
+      let history = loadHistory().filter(e => e.id !== id);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const history = loadHistory();
+      const container = document.getElementById('resultHistory');
+      const grid = document.getElementById('historyGrid');
+      if (!container || !grid) return;
+      if (history.length === 0) { container.style.display = 'none'; return; }
+      container.style.display = '';
+      grid.innerHTML = history.map(entry => {
+        const date = new Date(entry.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        return `<div class="history-item">
+          <img src="${entry.thumb}" alt="Simulation ${entry.modelName}" class="history-item__img" loading="lazy">
+          <div class="history-item__info">
+            <div class="history-item__name">${entry.modelName}</div>
+            <div class="history-item__style">${entry.modelStyle}</div>
+            <div class="history-item__date">${date}</div>
+          </div>
+          <button class="history-item__delete" onclick="deleteFromHistory(${entry.id})" title="Supprimer">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>`;
+      }).join('');
     }
 
     // ========== CLOSE MODAL (legacy) ==========
