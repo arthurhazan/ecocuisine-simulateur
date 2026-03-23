@@ -6,6 +6,7 @@
   <title>Simulateur de Cuisine IA — ECOCUISINE</title>
   <meta name="description" content="Visualisez votre future cuisine ECOCUISINE en 30 secondes. Uploadez une photo, choisissez un modèle, découvrez le résultat. Gratuit et sans engagement.">
   <link rel="canonical" href="https://simulateur.ecocuisine.fr/">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 
   <!-- Open Graph / Social -->
@@ -49,9 +50,18 @@
   }
   </script>
 
+  <!-- Preconnect to external domains -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://www.ecocuisine.fr" crossorigin>
+  <link rel="dns-prefetch" href="https://www.ecocuisine.fr">
+
+  <!-- Preload LCP image -->
+  <link rel="preload" as="image" href="assets/images/cuisine-apres.webp" type="image/webp">
+
+  <!-- Non-blocking Google Fonts (eliminates render-blocking) -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap"></noscript>
   <style>
     /* ========== RESET & BASE ========== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2056,7 +2066,7 @@
   <header class="header">
     <div class="header__inner">
       <a href="/" class="logo" onclick="event.preventDefault(); simGoBack(); window.scrollTo(0,0);">
-        <img src="assets/logos/logo-ecocuisine-white.png" alt="ECOCUISINE — La cuisine tout compris" style="height:40px;">
+        <img src="assets/logos/logo-ecocuisine-white.png" alt="ECOCUISINE — La cuisine tout compris" width="238" height="40" style="height:40px;width:auto;">
       </a>
       <nav class="header__nav">
         <a href="https://www.ecocuisine.fr/cuisines/" target="_blank">Les cuisines</a>
@@ -2122,10 +2132,13 @@
 
       <div class="hero__visual fade-in fade-in-delay-2">
         <div class="before-after" id="heroBeforeAfter">
-          <!-- After image (full background) -->
-          <img class="before-after__after" src="assets/images/cuisine-apres.png" alt="Après — Cuisine transformée ECOCUISINE">
+          <!-- After image (full background) — LCP element -->
+          <picture>
+            <source srcset="assets/images/cuisine-apres.webp" type="image/webp">
+            <img class="before-after__after" src="assets/images/cuisine-apres.png" alt="Après — Cuisine transformée ECOCUISINE" fetchpriority="high" loading="eager" width="1248" height="832">
+          </picture>
           <!-- Before image (clipped via clip-path) -->
-          <img class="before-after__before" id="beforeImg" src="assets/images/cuisine-avant.webp" alt="Avant — Cuisine originale">
+          <img class="before-after__before" id="beforeImg" src="assets/images/cuisine-avant.webp" alt="Avant — Cuisine originale" loading="eager" width="1248" height="832">
           <!-- Slider handle -->
           <div class="before-after__slider" id="baSlider">
             <div class="before-after__handle">
@@ -2217,7 +2230,7 @@
       <div class="gamme__grid" id="gammeGrid">
         <!-- Row 1: Featured Ecosmart + 2 regular -->
         <div class="model-card model-card--featured fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/257-1.jpg" alt="Cuisine Ecosmart"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/257-1.jpg" alt="Cuisine Ecosmart" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Ecosmart</div>
@@ -2226,7 +2239,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/251-1.jpg" alt="Cuisine Mira"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/251-1.jpg" alt="Cuisine Mira" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Mira</div>
@@ -2235,7 +2248,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/258-1.jpg" alt="Cuisine Pulse"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/258-1.jpg" alt="Cuisine Pulse" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Pulse</div>
@@ -2244,7 +2257,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/246-1.jpg" alt="Cuisine Atelier"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/246-1.jpg" alt="Cuisine Atelier" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Atelier</div>
@@ -2255,7 +2268,7 @@
 
         <!-- Row 2 -->
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/191-1.jpg" alt="Cuisine Cosy"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/191-1.jpg" alt="Cuisine Cosy" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Cosy</div>
@@ -2264,7 +2277,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/247-1.jpg" alt="Cuisine Emotion"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/247-1.jpg" alt="Cuisine Emotion" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Emotion</div>
@@ -2273,7 +2286,7 @@
           </div>
         </div>
         <div class="model-card model-card--tall fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/218-1.jpg" alt="Cuisine Frame"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/218-1.jpg" alt="Cuisine Frame" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Frame</div>
@@ -2282,7 +2295,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/219-1.jpg" alt="Cuisine Hydra"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/219-1.jpg" alt="Cuisine Hydra" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Hydra</div>
@@ -2293,7 +2306,7 @@
 
         <!-- Row 3 -->
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/248-1.jpg" alt="Cuisine Idea"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/248-1.jpg" alt="Cuisine Idea" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Idea</div>
@@ -2302,7 +2315,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/223-1.jpg" alt="Cuisine Innova"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/223-1.jpg" alt="Cuisine Innova" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Innova</div>
@@ -2311,7 +2324,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/249-1.jpg" alt="Cuisine Intensa"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/249-1.jpg" alt="Cuisine Intensa" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Intensa</div>
@@ -2322,7 +2335,7 @@
 
         <!-- Featured Hydra wide -->
         <div class="model-card model-card--featured fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/46-1.jpg" alt="Cuisine Linea"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/46-1.jpg" alt="Cuisine Linea" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Linea</div>
@@ -2331,7 +2344,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/226-1.jpg" alt="Cuisine Matéria"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/226-1.jpg" alt="Cuisine Matéria" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Matéria</div>
@@ -2340,7 +2353,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/250-1.jpg" alt="Cuisine Novia"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/250-1.jpg" alt="Cuisine Novia" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Novia</div>
@@ -2351,7 +2364,7 @@
 
         <!-- More models -->
         <div class="model-card model-card--tall fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/231-1.jpg" alt="Cuisine Phenix"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/231-1.jpg" alt="Cuisine Phenix" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Phenix</div>
@@ -2360,7 +2373,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/118-1.jpg" alt="Cuisine Pietra"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/118-1.jpg" alt="Cuisine Pietra" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Pietra</div>
@@ -2369,7 +2382,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/240-1.jpg" alt="Cuisine Quadra"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/240-1.jpg" alt="Cuisine Quadra" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Quadra</div>
@@ -2378,7 +2391,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/149-1.jpg" alt="Cuisine Quercia"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/149-1.jpg" alt="Cuisine Quercia" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Quercia</div>
@@ -2389,7 +2402,7 @@
 
         <!-- Last row -->
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/132-1.jpg" alt="Cuisine Sygma"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/132-1.jpg" alt="Cuisine Sygma" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Sygma</div>
@@ -2398,7 +2411,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/39-1.jpg" alt="Cuisine Systema"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/39-1.jpg" alt="Cuisine Systema" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Systema</div>
@@ -2407,7 +2420,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/10-1.jpg" alt="Cuisine Urban"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/10-1.jpg" alt="Cuisine Urban" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Urban</div>
@@ -2416,7 +2429,7 @@
           </div>
         </div>
         <div class="model-card fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/175-1.jpg" alt="Cuisine Wave"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/175-1.jpg" alt="Cuisine Wave" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Wave</div>
@@ -2425,7 +2438,7 @@
           </div>
         </div>
         <div class="model-card model-card--featured fade-in" onclick="scrollToUpload()">
-          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/185-1.jpg" alt="Cuisine Wood"></div>
+          <div class="model-card__img"><img src="https://www.ecocuisine.fr/uploads/photos/185-1.jpg" alt="Cuisine Wood" loading="lazy" decoding="async"></div>
           <div class="model-card__overlay"></div>
           <div class="model-card__body">
             <div class="model-card__name">Wood</div>
@@ -2984,7 +2997,7 @@
     <div class="footer__inner">
       <div class="footer__col">
         <div style="margin-bottom:16px;">
-          <img src="assets/logos/logo-ecocuisine-white.png" alt="ECOCUISINE — La cuisine tout compris" style="height:40px;">
+          <img src="assets/logos/logo-ecocuisine-white.png" alt="ECOCUISINE — La cuisine tout compris" width="238" height="40" style="height:40px;width:auto;" loading="lazy">
         </div>
         <p style="font-size:0.85rem;line-height:1.6;margin-bottom:16px;">Design, écologie, fonctionnalité.<br>Votre cuisine tout compris à prix éco.</p>
         <div class="footer__social">
