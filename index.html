@@ -757,54 +757,71 @@
       .testimonials__grid { grid-template-columns: repeat(3, 1fr); }
     }
     .testimonial {
-      background: var(--grey-light);
+      background: var(--orange);
       border-radius: var(--radius-lg);
       padding: 28px;
-      border-left: 4px solid var(--orange);
-      transition: transform 0.2s;
+      border-left: 4px solid var(--white);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow);
+      position: relative;
     }
-    .testimonial:hover { transform: translateY(-4px); }
+    .testimonial:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+    }
     .testimonial__stars {
-      color: var(--orange);
+      color: var(--white);
       font-size: 1rem;
-      margin-bottom: 14px;
     }
     .testimonial__quote {
       font-size: 0.95rem;
       color: var(--anthracite);
       line-height: 1.7;
-      margin-bottom: 20px;
+      margin: 0;
     }
     .testimonial__author {
       display: flex;
       align-items: center;
       gap: 12px;
+      margin-top: 10px;
     }
     .testimonial__avatar {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: var(--orange);
+      background: var(--white);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      color: var(--white);
+      color: var(--orange);
       font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .testimonial__info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     .testimonial__name {
       font-weight: 700;
       color: var(--anthracite);
       font-size: 0.9rem;
+      line-height: 1.3;
     }
     .testimonial__location {
       font-size: 0.8rem;
       color: var(--grey-mid);
+      line-height: 1.3;
     }
     .testimonial__model {
       font-size: 0.8rem;
-      color: var(--orange);
-      font-weight: 600;
+      color: var(--white);
+      font-weight: 700;
+      line-height: 1.3;
     }
 
     /* Badges */
@@ -1768,7 +1785,7 @@
       object-fit: cover;
       border-radius: var(--radius);
     }
-    .result-recap__content {}
+
     .result-recap__model-name {
       font-family: 'Rubik', sans-serif;
       font-size: 1.5rem;
@@ -2056,7 +2073,9 @@
       color: var(--grey-mid);
       line-height: 1.7;
     }
+
   </style>
+
 </head>
 <body>
 
@@ -2476,7 +2495,7 @@
           </p>
           <div class="testimonial__author">
             <div class="testimonial__avatar">S</div>
-            <div>
+            <div class="testimonial__info">
               <div class="testimonial__name">Sophie</div>
               <div class="testimonial__location">Nantes</div>
               <div class="testimonial__model">Modèle Hydra — Bleu</div>
@@ -2491,7 +2510,7 @@
           </p>
           <div class="testimonial__author">
             <div class="testimonial__avatar">M</div>
-            <div>
+            <div class="testimonial__info">
               <div class="testimonial__name">Marie</div>
               <div class="testimonial__location">Lyon</div>
               <div class="testimonial__model">Modèle Cosy — Blanc</div>
@@ -2506,7 +2525,7 @@
           </p>
           <div class="testimonial__author">
             <div class="testimonial__avatar">P</div>
-            <div>
+            <div class="testimonial__info">
               <div class="testimonial__name">Philippe</div>
               <div class="testimonial__location">Bordeaux</div>
               <div class="testimonial__model">Modèle Phenix — Vert</div>
