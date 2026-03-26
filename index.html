@@ -761,14 +761,20 @@
       border-radius: var(--radius-lg);
       padding: 28px;
       border-left: 4px solid var(--orange);
-      transition: transform 0.2s;
+      transition: transform 0.2s, background 0.3s, border-color 0.3s;
     }
-    .testimonial:hover { transform: translateY(-4px); }
+    .testimonial:hover {
+      transform: translateY(-4px);
+      background: var(--orange);
+      border-left-color: var(--white);
+    }
     .testimonial__stars {
       color: var(--orange);
       font-size: 1rem;
       margin-bottom: 14px;
+      transition: color 0.3s;
     }
+    .testimonial:hover .testimonial__stars { color: var(--white); }
     .testimonial__quote {
       font-size: 0.95rem;
       color: var(--anthracite);
@@ -791,6 +797,11 @@
       font-weight: 800;
       color: var(--white);
       font-size: 1rem;
+      transition: background 0.3s, color 0.3s;
+    }
+    .testimonial:hover .testimonial__avatar {
+      background: var(--white);
+      color: var(--orange);
     }
     .testimonial__name {
       font-weight: 700;
@@ -805,7 +816,9 @@
       font-size: 0.8rem;
       color: var(--orange);
       font-weight: 600;
+      transition: color 0.3s;
     }
+    .testimonial:hover .testimonial__model { color: var(--white); }
 
     /* Badges */
     .badges {
@@ -1092,7 +1105,9 @@
       opacity: 0.08;
       line-height: 1;
       pointer-events: none;
+      transition: color 0.3s;
     }
+    .testimonial:hover::before { color: var(--white); }
 
     /* ========== RESPONSIVE FIXES ========== */
     @media (max-width: 767px) {
