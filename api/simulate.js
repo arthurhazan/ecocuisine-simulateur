@@ -10,6 +10,41 @@ export const config = {
 // Key: modelPhotoUrl, Value: { base64: string, mimeType: string }
 const modelPhotoCache = {};
 
+// Rate limiting — image generation is billed per call, so an open endpoint is a cost risk.
+// This is a best-effort guard: the counter lives in the memory of a single warm Vercel
+// instance, so a burst spread across cold starts can exceed the cap. It stops casual
+// looping and scripted abuse from one client, not a distributed attack. A durable store
+// (Upstash/Redis) is the next step if the volume justifies it.
+const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX || 10);
+const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60 * 60 * 1000);
+const rateLimitBuckets = new Map();
+
+function clientKey(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = (Array.isArray(forwarded) ? forwarded[0] : forwarded || '').split(',')[0].trim();
+  return ip || req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown';
+}
+
+function isRateLimited(req) {
+  const key = clientKey(req);
+  const now = Date.now();
+  const bucket = rateLimitBuckets.get(key);
+
+  if (!bucket || now - bucket.startedAt > RATE_LIMIT_WINDOW_MS) {
+    rateLimitBuckets.set(key, { startedAt: now, count: 1 });
+    return { limited: false, count: 1 };
+  }
+
+  bucket.count += 1;
+  // Opportunistic cleanup so the map cannot grow without bound on a long-lived instance.
+  if (rateLimitBuckets.size > 5000) {
+    for (const [k, b] of rateLimitBuckets) {
+      if (now - b.startedAt > RATE_LIMIT_WINDOW_MS) rateLimitBuckets.delete(k);
+    }
+  }
+  return { limited: bucket.count > RATE_LIMIT_MAX, count: bucket.count };
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -29,6 +64,16 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
   }
 
+  const rate = isRateLimited(req);
+  if (rate.limited) {
+    console.warn('[rate-limit] blocked', clientKey(req), rate.count);
+    res.setHeader('Retry-After', String(Math.ceil(RATE_LIMIT_WINDOW_MS / 1000)));
+    return res.status(429).json({
+      error: 'rate_limited',
+      message: `Limite de ${RATE_LIMIT_MAX} simulations par heure atteinte. Réessayez plus tard.`,
+    });
+  }
+
   try {
     const { userPhoto, userPhotoMimeType, modelPhotoUrl, modelName } = req.body;
 
@@ -37,7 +82,11 @@ export default async function handler(req, res) {
     }
 
     // 1. Validate that the user photo shows a kitchen or suitable interior space
-    const validationUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // gemini-2.0-flash a été arrêté le 1er juin 2026 : la validation tournait donc à vide
+    // (échec silencieux, on passait directement à la génération). Modèle de remplacement :
+    // le flash-lite courant, le moins cher pour une simple classification d'image.
+    const VALIDATION_MODEL = process.env.VALIDATION_MODEL || 'gemini-3.5-flash-lite';
+    const validationUrl = `https://generativelanguage.googleapis.com/v1beta/models/${VALIDATION_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
     try {
       const validationResponse = await fetch(validationUrl, {
         method: 'POST',
@@ -53,7 +102,18 @@ export default async function handler(req, res) {
                 }
               },
               {
-                text: `Analyse cette image et dis-moi si elle montre une cuisine, une salle à manger, un salon, ou tout autre espace intérieur d'un logement (maison ou appartement) qui pourrait accueillir une cuisine.
+                text: `Tu es un classificateur strict. Analyse cette image.
+
+Elle est VALIDE uniquement si elle montre principalement :
+- une pièce, vide ou meublée (cuisine, salle à manger, salon, couloir, salle de bain), avec murs, sol et plafond visibles ;
+- un espace architectural intérieur où une cuisine pourrait être installée.
+
+Elle est INVALIDE si elle montre principalement :
+- une personne, un visage ou un portrait, même dans un intérieur ;
+- un animal ;
+- un extérieur (jardin, rue, façade) ;
+- un objet ou un meuble seul, sans contexte architectural ;
+- une capture d'écran, un dessin, un plan, un document.
 
 Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code, exactement dans ce format :
 {"isKitchenOrInterior": true, "confidence": 0.95, "reason": "Description courte de ce que montre l'image"}`
@@ -111,12 +171,16 @@ RÈGLES IMPÉRATIVES :
 1. PERSPECTIVE : Conserver EXACTEMENT la même perspective, le même angle de vue, le même cadrage et le même point de fuite que la photo d'origine (Image 1). La caméra ne bouge absolument pas. La position de la caméra, sa hauteur, son inclinaison et sa focale doivent être strictement identiques.
 2. ARCHITECTURE : Ne JAMAIS modifier l'architecture du bâtiment : murs, fenêtres, portes, sol, plafond, dimensions de la pièce, prises électriques, radiateurs. Tous les éléments structurels restent exactement à leur place.
 3. CUISINE : Appliquer les éléments visuels de la cuisine de référence "${modelName}" (Image 2) : style des façades de meubles, couleurs, finitions (mat/brillant/bois), type de plan de travail, crédence, poignées, électroménager intégré.
+3bis. ÉLECTROMÉNAGER : chaque appareil doit rester un appareil, jamais un meuble ou un caisson plein. Le four et le micro-ondes gardent une porte vitrée sombre, un bandeau de commandes visible et une façade en inox ou en verre distincte des façades de meubles. La plaque de cuisson reste une surface plane sombre affleurant le plan de travail, avec ses foyers visibles. La hotte reste un volume distinct au-dessus de la plaque. Le lave-vaisselle et le réfrigérateur intégrés peuvent être habillés par une façade assortie, mais leurs poignées et lignes de refente doivent rester lisibles. Ne jamais remplacer un appareil par un placard, un tiroir ou une façade pleine, et ne jamais inventer d'appareil absent de la photo d'origine.
 4. COHÉRENCE SPATIALE : Adapter harmonieusement le mobilier de cuisine à l'espace existant de la photo d'origine. Respecter les contraintes de la pièce (arrivées d'eau, prises, ouvertures). Les meubles doivent s'intégrer naturellement dans la pièce telle qu'elle est.
 5. PHOTORÉALISME : Le résultat doit être indiscernable d'une vraie photographie. L'éclairage doit être cohérent avec celui de la photo d'origine (lumière naturelle, ombres, reflets).
 6. FORMAT : L'image générée doit avoir exactement les mêmes proportions et la même résolution que l'image d'origine.`;
 
     // 4. Call Gemini API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`;
+    // ID GA du modèle (l'ancien `gemini-3.1-flash-image-preview` n'existe plus sous ce nom).
+    // Coût de référence : ~0,067 $ par image en 1K, ~0,045 $ en 0,5K.
+    const IMAGE_MODEL = process.env.IMAGE_MODEL || 'gemini-3.1-flash-image';
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${IMAGE_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
     const geminiResponse = await fetch(geminiUrl, {
       method: 'POST',

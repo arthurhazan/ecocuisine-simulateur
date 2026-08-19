@@ -2073,6 +2073,48 @@
       color: var(--grey-mid);
       line-height: 1.7;
     }
+
+    /* ===== MENTION IA / NON CONTRACTUEL ===== */
+    .ai-disclaimer {
+      max-width: 900px;
+      margin: 18px auto 0;
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--grey-light);
+      border-left: 3px solid var(--orange);
+      border-radius: var(--radius-sm, 8px);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: var(--grey-mid);
+      text-align: left;
+    }
+    .ai-disclaimer svg { flex: 0 0 auto; margin-top: 1px; }
+    .ai-disclaimer strong { color: var(--anthracite); font-weight: 700; }
+    .ai-disclaimer--compact {
+      margin-top: 12px;
+      font-size: 0.78rem;
+      background: transparent;
+      border: 0;
+      border-left: 0;
+      padding: 0;
+      justify-content: center;
+      text-align: center;
+    }
+    .quota-notice {
+      max-width: 620px;
+      margin: 16px auto 0;
+      padding: 14px 16px;
+      background: var(--orange-light, #fdf3e6);
+      border: 1px solid var(--orange);
+      border-radius: var(--radius-sm, 8px);
+      font-size: 0.88rem;
+      color: var(--anthracite);
+      text-align: center;
+    }
+    .quota-notice.hidden { display: none; }
   </style>
 </head>
 <body>
@@ -2165,6 +2207,7 @@
           <span class="before-after__label before-after__label--before">Avant</span>
           <span class="before-after__label before-after__label--after">Après</span>
         </div>
+        <p class="ai-disclaimer ai-disclaimer--compact">Exemple de rendu g&eacute;n&eacute;r&eacute; par IA, non contractuel.</p>
       </div>
     </div>
   </section>
@@ -2926,6 +2969,12 @@
           <span class="before-after__label before-after__label--after">Après</span>
         </div>
       </div>
+      <p class="ai-disclaimer">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="#E8850A" stroke-width="2"/><path d="M12 8v.01M12 11v5" stroke="#E8850A" stroke-width="2" stroke-linecap="round"/></svg>
+        <span><strong>Image g&eacute;n&eacute;r&eacute;e par intelligence artificielle.</strong> Ce rendu est une projection
+        d&apos;inspiration, non contractuelle. Il peut comporter des impr&eacute;cisions de repr&eacute;sentation
+        (&eacute;lectrom&eacute;nager, dimensions, mat&eacute;riaux). Seul un devis &eacute;tabli en magasin ECOCUISINE fait foi.</span>
+      </p>
     </div>
 
     <div class="result-body">
@@ -3118,6 +3167,108 @@
     ];
 
     // ========== STATE ==========
+    // ========== TRACKING / KPI ==========
+    // Couche d'événements neutre : pousse dans window.dataLayer (GTM / GA4) et émet un
+    // CustomEvent, sans dépendance à un prestataire. Brancher le tag manager choisi côté
+    // <head> suffit pour collecter les KPI annoncés au client : taux d'usage, nombre de
+    // simulations générées, clics « prendre RDV en magasin », leads collectés.
+    window.dataLayer = window.dataLayer || [];
+    const TRACK_DEBUG = new URLSearchParams(location.search).has('debugTracking');
+
+    function track(event, props) {
+      const payload = Object.assign({ event: 'simulateur_' + event, ts: Date.now() }, props || {});
+      window.dataLayer.push(payload);
+      window.dispatchEvent(new CustomEvent('simulateur:track', { detail: payload }));
+      if (TRACK_DEBUG) console.log('[track]', payload);
+    }
+
+    // Vue de page : base du taux d'usage (visites vs simulations lancées).
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => track('page_view', { path: location.pathname }));
+    } else {
+      track('page_view', { path: location.pathname });
+    }
+
+    // Clics sortants et CTA : un seul écouteur délégué, pas d'attribut onclick à maintenir.
+    document.addEventListener('click', (e) => {
+      const el = e.target.closest('a[href], button[data-cta]');
+      if (!el) return;
+      const label = el.dataset.cta || el.textContent.trim().slice(0, 60);
+      const href = el.getAttribute('href') || '';
+      if (el.dataset.cta || href.includes('ecocuisine.fr')) {
+        track('cta_click', { cta_label: label, cta_href: href, screen: currentScreen });
+      }
+    });
+
+    // ========== GARDE-FOU SUR LE NOMBRE DE GÉNÉRATIONS ==========
+    // Le coût d'une génération n'est pas nul : on plafonne côté navigateur pour éviter
+    // l'usage en boucle. Le plafond serveur (par IP) est dans api/simulate.js — celui-ci
+    // n'est qu'un premier filtre, contournable par un utilisateur déterminé.
+    const QUOTA_KEY = 'ecocuisine_sim_quota';
+    const QUOTA_MAX_PER_DAY = 5;
+
+    function quotaState() {
+      const today = new Date().toISOString().slice(0, 10);
+      let raw = {};
+      try { raw = JSON.parse(localStorage.getItem(QUOTA_KEY) || '{}'); } catch (e) {}
+      if (raw.day !== today) raw = { day: today, count: 0 };
+      return raw;
+    }
+
+    function quotaRemaining() {
+      return Math.max(0, QUOTA_MAX_PER_DAY - quotaState().count);
+    }
+
+    function quotaConsume() {
+      const st = quotaState();
+      st.count += 1;
+      try { localStorage.setItem(QUOTA_KEY, JSON.stringify(st)); } catch (e) {}
+      return st.count;
+    }
+
+    function showQuotaNotice() {
+      let el = document.getElementById('quotaNotice');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'quotaNotice';
+        el.className = 'quota-notice';
+        el.innerHTML = 'Vous avez atteint la limite de ' + QUOTA_MAX_PER_DAY +
+          ' simulations pour aujourd\'hui. Pour aller plus loin, prenez rendez-vous dans votre magasin ECOCUISINE : ' +
+          '<a href="https://www.ecocuisine.fr/magasins/" target="_blank" data-cta="quota_rdv_magasin">trouver un magasin</a>.';
+        const host = document.getElementById('selectionCtaBar') || document.body;
+        host.parentNode.insertBefore(el, host);
+      }
+      el.classList.remove('hidden');
+    }
+
+    // ========== COLLECTE DE LEAD ==========
+    // Point d'entrée unique : la destination des leads doit être précisée par ÉcoCuisine
+    // (Excel/Sheet pour la phase de test, Brevo ensuite). Tant qu'elle n'est pas connue,
+    // on trace l'événement et on conserve le lead en local, sans l'envoyer nulle part.
+    const LEADS_KEY = 'ecocuisine_leads';
+
+    async function submitLead(email, context) {
+      if (!email || !email.includes('@')) return false;
+      const lead = {
+        email: email,
+        model: simState.selectedModel ? simState.selectedModel.name : null,
+        context: context || 'unknown',
+        createdAt: new Date().toISOString(),
+      };
+      try {
+        const leads = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
+        leads.push(lead);
+        localStorage.setItem(LEADS_KEY, JSON.stringify(leads.slice(-20)));
+      } catch (e) {}
+      track('lead_submitted', { context: lead.context, model: lead.model });
+      // TODO(client) : remplacer par l'envoi vers la destination validée par ÉcoCuisine.
+      // await fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(lead) });
+      return true;
+    }
+
+    let currentScreen = 'landing';
+
     let simState = {
       userPhotoDataUrl: null,   // full data URL
       userPhotoBase64: null,    // base64 only
@@ -3128,6 +3279,8 @@
 
     // ========== SCREEN MANAGEMENT ==========
     function showScreen(screenId) {
+      currentScreen = screenId;
+      track('screen_view', { screen: screenId });
       // Hide all screens
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       // Toggle body class
@@ -3217,6 +3370,7 @@
       simState.userPhotoMimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
       simState.userPhotoBase64 = parts[1];
       simState.selectedModel = null;
+      track('photo_uploaded', { mime: simState.userPhotoMimeType });
 
       // Show user photo in selection screen (original quality)
       document.getElementById('selectionUserPhoto').src = dataUrl;
@@ -3320,6 +3474,7 @@
     function selectModel(index) {
       const model = MODELS[index];
       simState.selectedModel = model;
+      track('model_selected', { model: model.name, style: model.style });
 
       // Update UI
       document.querySelectorAll('.model-select-card').forEach(c => c.classList.remove('selected'));
@@ -3338,6 +3493,14 @@
     async function startSimulation() {
       if (!simState.selectedModel || !simState.userPhotoBase64) return;
 
+      if (quotaRemaining() <= 0) {
+        track('quota_reached', { max_per_day: QUOTA_MAX_PER_DAY });
+        showQuotaNotice();
+        return;
+      }
+
+      const startedAt = Date.now();
+      track('simulation_started', { model: simState.selectedModel.name, remaining: quotaRemaining() });
       showScreen('loading');
 
       // Reset error panel state
@@ -3395,7 +3558,16 @@
           if (err.error === 'invalid_photo') {
             clearInterval(stepInterval);
             clearInterval(tipInterval);
+            track('simulation_invalid_photo', { reason: err.reason || '' });
             showInvalidPhotoError(true, err.reason);
+            return;
+          }
+          if (err.error === 'rate_limited') {
+            clearInterval(stepInterval);
+            clearInterval(tipInterval);
+            track('quota_reached', { source: 'server' });
+            showQuotaNotice();
+            showScreen('selection');
             return;
           }
           throw new Error(err.message || err.error || 'Erreur serveur');
@@ -3404,6 +3576,12 @@
         const data = await response.json();
         const generatedDataUrl = `data:${data.mimeType};base64,${data.image}`;
         simState.generatedImageDataUrl = generatedDataUrl;
+        quotaConsume();
+        track('simulation_succeeded', {
+          model: simState.selectedModel.name,
+          duration_ms: Date.now() - startedAt,
+          remaining: quotaRemaining(),
+        });
 
         // Complete progress bar
         loadingBar.style.width = '100%';
@@ -3415,6 +3593,7 @@
         clearInterval(stepInterval);
         clearInterval(tipInterval);
         console.error('Simulation error:', error);
+        track('simulation_failed', { model: simState.selectedModel && simState.selectedModel.name, message: error.message });
         alert('Erreur lors de la génération : ' + error.message + '\n\nVeuillez réessayer.');
         showScreen('selection');
       }
@@ -3499,10 +3678,10 @@
     }
 
     // ========== EMAIL ==========
-    function sendResultEmail() {
+    async function sendResultEmail() {
       const email = document.getElementById('resultEmailInput').value;
-      if (email && email.includes('@')) {
-        // Simulate sending (MVP)
+      const ok = await submitLead(email, 'result_email');
+      if (ok) {
         document.getElementById('resultEmailForm').classList.add('hidden');
         document.getElementById('resultEmailSuccess').classList.add('visible');
       }
@@ -3511,6 +3690,7 @@
     // ========== DOWNLOAD RESULT ==========
     function downloadResult() {
       if (!simState.generatedImageDataUrl) return;
+      track('result_downloaded', { model: simState.selectedModel && simState.selectedModel.name });
       const link = document.createElement('a');
       link.href = simState.generatedImageDataUrl;
       link.download = 'ecocuisine-simulation-' + (simState.selectedModel?.name || 'rendu') + '.png';
@@ -3532,6 +3712,7 @@
           const blob = await res.blob();
           const file = new File([blob], 'ecocuisine-' + modelName + '.jpg', { type: blob.type });
           if (navigator.canShare({ files: [file] })) {
+            track('result_shared', { channel: 'native', model: modelName });
             await navigator.share({ files: [file], text });
             return;
           }
@@ -3539,6 +3720,7 @@
       }
 
       // Fallback: URL-only share
+      track('result_shared', { channel: platform, model: simState.selectedModel && simState.selectedModel.name });
       if (platform === 'whatsapp') {
         window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
       } else {
@@ -3628,9 +3810,10 @@
     function closeModal() {
       document.getElementById('emailModal').classList.remove('active');
     }
-    function submitEmail() {
+    async function submitEmail() {
       const email = document.getElementById('emailInput').value;
-      if (email && email.includes('@')) { closeModal(); }
+      const ok = await submitLead(email, 'modal_download');
+      if (ok) closeModal();
     }
 
     // ========== STICKY CTA MOBILE ==========
