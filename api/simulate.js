@@ -110,9 +110,10 @@ export default async function handler(req, res) {
   const AZURE_ENDPOINT = (process.env.AZURE_OPENAI_ENDPOINT || '').replace(/\/+$/, '');
   const AZURE_API_KEY = process.env.AZURE_OPENAI_KEY;
   const IMAGE_DEPLOYMENT = process.env.AZURE_OPENAI_IMAGE_DEPLOYMENT || 'gpt-image-2.5-sunburst';
-  // Déploiement d'un modèle de chat multimodal pour la validation de la photo.
-  // Non défini : la validation est simplement sautée (échec ouvert, comme avant).
-  const VALIDATION_DEPLOYMENT = process.env.AZURE_OPENAI_VALIDATION_DEPLOYMENT || '';
+  // Validation de la photo : API Anthropic, Claude Haiku (le moins cher pour une
+  // classification d'image). Sans ANTHROPIC_API_KEY, l'étape est simplement sautée.
+  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+  const VALIDATION_MODEL = process.env.VALIDATION_MODEL || 'claude-haiku-5-5';
   const IMAGE_QUALITY = process.env.AZURE_OPENAI_IMAGE_QUALITY || 'medium';
 
   if (!AZURE_ENDPOINT || !AZURE_API_KEY) {
@@ -137,27 +138,35 @@ export default async function handler(req, res) {
     }
 
     // 1. Validate that the user photo shows a kitchen or suitable interior space
-    // Classification via un déploiement de chat multimodal Azure (gpt-4.1-mini ou équivalent).
-    // Sans AZURE_OPENAI_VALIDATION_DEPLOYMENT, on saute l'étape et on génère directement.
-    if (VALIDATION_DEPLOYMENT) {
+    // Classification par Claude Haiku via l'API Anthropic.
+    // Sans ANTHROPIC_API_KEY, on saute l'étape et on génère directement.
+    if (ANTHROPIC_API_KEY) {
       try {
-        const validationResponse = await fetch(`${AZURE_ENDPOINT}/openai/v1/chat/completions`, {
+        const validationResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: { 'api-key': AZURE_API_KEY, 'Content-Type': 'application/json' },
+          headers: {
+            'x-api-key': ANTHROPIC_API_KEY,
+            'anthropic-version': '2026-10-21',
+            'content-type': 'application/json'
+          },
           body: JSON.stringify({
-            model: VALIDATION_DEPLOYMENT,
-            response_format: { type: 'json_object' },
-            max_completion_tokens: 300,
-            messages: [{
-              role: 'user',
-              content: [
-                {
-                  type: 'image_url',
-                  image_url: { url: `data:${userPhotoMimeType || 'image/jpeg'};base64,${userPhoto}` }
-                },
-                {
-                  type: 'text',
-                  text: `Tu es un classificateur strict. Analyse cette image.
+            model: VALIDATION_MODEL,
+            max_tokens: 300,
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'image',
+                    source: {
+                      type: 'base64',
+                      media_type: userPhotoMimeType || 'image/jpeg',
+                      data: userPhoto
+                    }
+                  },
+                  {
+                    type: 'text',
+                    text: `Tu es un classificateur strict. Analyse cette image.
 
 Elle est VALIDE uniquement si elle montre principalement :
 - une pièce, vide ou meublée (cuisine, salle à manger, salon, couloir, salle de bain), avec murs, sol et plafond visibles ;
@@ -172,17 +181,20 @@ Elle est INVALIDE si elle montre principalement :
 
 Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code, exactement dans ce format :
 {"isKitchenOrInterior": true, "confidence": 0.95, "reason": "Description courte de ce que montre l'image"}`
-                }
-              ]
-            }]
+                  }
+                ]
+              },
+              // Préremplissage : force la réponse à démarrer sur du JSON, sans phrase d'intro.
+              { role: 'assistant', content: '{' }
+            ]
           })
         });
 
         if (validationResponse.ok) {
           const validationResult = await validationResponse.json();
-          const validationText = validationResult.choices?.[0]?.message?.content;
+          const validationText = validationResult.content?.find(part => part.type === 'text')?.text;
           if (validationText) {
-            const validation = JSON.parse(validationText);
+            const validation = JSON.parse(`{${validationText}`);
             if (validation.isKitchenOrInterior === false && (validation.confidence ?? 0) >= 0.7) {
               return res.status(422).json({
                 error: 'invalid_photo',

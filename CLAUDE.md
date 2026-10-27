@@ -20,12 +20,12 @@ Chantiers ouverts : `docs/BACKLOG.md`.
 
 ## Chaîne de génération (`api/simulate.js`)
 
-Fournisseur : Azure OpenAI, ressource `madameirma4agence` (API v1, clé dans l'en-tête `api-key`).
+Deux fournisseurs : Azure OpenAI pour l'image (ressource `madameirma4agence`, API v1, clé dans
+l'en-tête `api-key`) et l'API Anthropic pour la validation de photo.
 
-1. Validation de la photo uploadée par un déploiement de chat multimodal Azure (réponse JSON
-   `isKitchenOrInterior`) — renvoie 422 `invalid_photo` si l'image n'est pas un intérieur, mais
-   échoue « ouvert » (on continue) si la validation plante. Étape sautée si
-   `AZURE_OPENAI_VALIDATION_DEPLOYMENT` n'est pas défini.
+1. Validation de la photo uploadée par Claude Haiku (réponse JSON `isKitchenOrInterior`) —
+   renvoie 422 `invalid_photo` si l'image n'est pas un intérieur, mais échoue « ouvert » (on
+   continue) si la validation plante. Étape sautée si `ANTHROPIC_API_KEY` n'est pas défini.
 2. Téléchargement de la photo du modèle de cuisine depuis `ecocuisine.fr`, avec cache mémoire
    par URL, valable pour les invocations chaudes d'une même instance Vercel.
 3. Génération par `POST /openai/v1/images/edits` (déploiement `gpt-image-2.5-sunburst` par
@@ -42,7 +42,8 @@ Variables d'environnement Vercel, jamais committées :
 | `AZURE_OPENAI_ENDPOINT` | `https://madameirma4agence.openai.azure.com` |
 | `AZURE_OPENAI_KEY` | clé API de la ressource |
 | `AZURE_OPENAI_IMAGE_DEPLOYMENT` | déploiement image, défaut `gpt-image-2.5-sunburst` |
-| `AZURE_OPENAI_VALIDATION_DEPLOYMENT` | déploiement chat multimodal pour la validation (optionnel) |
+| `ANTHROPIC_API_KEY` | clé API Anthropic pour la validation de photo (optionnel) |
+| `VALIDATION_MODEL` | modèle de validation, défaut `claude-haiku-5-5` |
 | `AZURE_OPENAI_IMAGE_QUALITY` | `low` / `medium` / `high`, défaut `medium` |
 | `AZURE_OPENAI_IMAGE_SIZE` | force une taille de sortie, sinon déduite du ratio |
 
