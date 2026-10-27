@@ -1,4 +1,4 @@
-// Vercel Serverless Function — Gemini Kitchen Simulation
+// Vercel Serverless Function — Azure OpenAI Kitchen Simulation
 // POST /api/simulate
 // Body: { userPhoto: base64, modelPhotoUrl: string, modelName: string }
 
@@ -45,6 +45,53 @@ function isRateLimited(req) {
   return { limited: bucket.count > RATE_LIMIT_MAX, count: bucket.count };
 }
 
+// Azure n'accepte que trois formats de sortie. On choisit celui dont le ratio est le plus
+// proche de la photo d'origine, pour respecter la règle 6 du prompt (mêmes proportions).
+const AZURE_SIZES = [
+  { label: '1024x1024', ratio: 1 },
+  { label: '1536x1024', ratio: 1536 / 1024 },
+  { label: '1024x1536', ratio: 1024 / 1536 },
+];
+
+function toBlob(base64, mimeType) {
+  return new Blob([Buffer.from(base64, 'base64')], { type: mimeType || 'image/jpeg' });
+}
+
+// Lecture des dimensions dans l'en-tête du fichier (PNG et JPEG), sans dépendance externe.
+function readDimensions(buffer) {
+  if (buffer.length > 24 && buffer.readUInt32BE(0) === 0x89504e47) {
+    return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+  }
+  if (buffer.length > 4 && buffer[0] === 0xff && buffer[1] === 0xd8) {
+    let offset = 2;
+    while (offset + 9 < buffer.length) {
+      if (buffer[offset] !== 0xff) { offset += 1; continue; }
+      const marker = buffer[offset + 1];
+      const length = buffer.readUInt16BE(offset + 2);
+      // SOF0..SOF15, hors marqueurs non dimensionnels (DHT, JPG, DAC)
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+        return { height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7) };
+      }
+      offset += 2 + length;
+    }
+  }
+  return null;
+}
+
+function pickSize(base64) {
+  if (process.env.AZURE_OPENAI_IMAGE_SIZE) return process.env.AZURE_OPENAI_IMAGE_SIZE;
+  try {
+    const dims = readDimensions(Buffer.from(base64, 'base64'));
+    if (!dims || !dims.height) return '1024x1024';
+    const ratio = dims.width / dims.height;
+    return AZURE_SIZES.reduce((best, candidate) =>
+      Math.abs(candidate.ratio - ratio) < Math.abs(best.ratio - ratio) ? candidate : best
+    ).label;
+  } catch (error) {
+    return '1024x1024';
+  }
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -59,9 +106,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+  // Azure OpenAI (ressource madameirma4agence) — API v1, clé passée dans l'en-tête `api-key`.
+  const AZURE_ENDPOINT = (process.env.AZURE_OPENAI_ENDPOINT || '').replace(/\/+$/, '');
+  const AZURE_API_KEY = process.env.AZURE_OPENAI_KEY;
+  const IMAGE_DEPLOYMENT = process.env.AZURE_OPENAI_IMAGE_DEPLOYMENT || 'gpt-image-2.5-sunburst';
+  // Déploiement d'un modèle de chat multimodal pour la validation de la photo.
+  // Non défini : la validation est simplement sautée (échec ouvert, comme avant).
+  const VALIDATION_DEPLOYMENT = process.env.AZURE_OPENAI_VALIDATION_DEPLOYMENT || '';
+  const IMAGE_QUALITY = process.env.AZURE_OPENAI_IMAGE_QUALITY || 'medium';
+
+  if (!AZURE_ENDPOINT || !AZURE_API_KEY) {
+    return res.status(500).json({ error: 'AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY not configured' });
   }
 
   const rate = isRateLimited(req);
@@ -82,27 +137,27 @@ export default async function handler(req, res) {
     }
 
     // 1. Validate that the user photo shows a kitchen or suitable interior space
-    // gemini-2.0-flash a été arrêté le 1er juin 2026 : la validation tournait donc à vide
-    // (échec silencieux, on passait directement à la génération). Modèle de remplacement :
-    // le flash-lite courant, le moins cher pour une simple classification d'image.
-    const VALIDATION_MODEL = process.env.VALIDATION_MODEL || 'gemini-3.5-flash-lite';
-    const validationUrl = `https://generativelanguage.googleapis.com/v1beta/models/${VALIDATION_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-    try {
-      const validationResponse = await fetch(validationUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            role: 'user',
-            parts: [
-              {
-                inlineData: {
-                  mimeType: userPhotoMimeType || 'image/jpeg',
-                  data: userPhoto
-                }
-              },
-              {
-                text: `Tu es un classificateur strict. Analyse cette image.
+    // Classification via un déploiement de chat multimodal Azure (gpt-4.1-mini ou équivalent).
+    // Sans AZURE_OPENAI_VALIDATION_DEPLOYMENT, on saute l'étape et on génère directement.
+    if (VALIDATION_DEPLOYMENT) {
+      try {
+        const validationResponse = await fetch(`${AZURE_ENDPOINT}/openai/v1/chat/completions`, {
+          method: 'POST',
+          headers: { 'api-key': AZURE_API_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: VALIDATION_DEPLOYMENT,
+            response_format: { type: 'json_object' },
+            max_completion_tokens: 300,
+            messages: [{
+              role: 'user',
+              content: [
+                {
+                  type: 'image_url',
+                  image_url: { url: `data:${userPhotoMimeType || 'image/jpeg'};base64,${userPhoto}` }
+                },
+                {
+                  type: 'text',
+                  text: `Tu es un classificateur strict. Analyse cette image.
 
 Elle est VALIDE uniquement si elle montre principalement :
 - une pièce, vide ou meublée (cuisine, salle à manger, salon, couloir, salle de bain), avec murs, sol et plafond visibles ;
@@ -117,32 +172,32 @@ Elle est INVALIDE si elle montre principalement :
 
 Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code, exactement dans ce format :
 {"isKitchenOrInterior": true, "confidence": 0.95, "reason": "Description courte de ce que montre l'image"}`
-              }
-            ]
-          }],
-          generationConfig: {
-            responseMimeType: 'application/json'
-          }
-        })
-      });
+                }
+              ]
+            }]
+          })
+        });
 
-      if (validationResponse.ok) {
-        const validationResult = await validationResponse.json();
-        const validationText = validationResult.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (validationText) {
-          const validation = JSON.parse(validationText);
-          if (validation.isKitchenOrInterior === false && (validation.confidence ?? 0) >= 0.7) {
-            return res.status(422).json({
-              error: 'invalid_photo',
-              message: 'La photo ne semble pas montrer une cuisine ou un espace intérieur adapté.',
-              reason: validation.reason || ''
-            });
+        if (validationResponse.ok) {
+          const validationResult = await validationResponse.json();
+          const validationText = validationResult.choices?.[0]?.message?.content;
+          if (validationText) {
+            const validation = JSON.parse(validationText);
+            if (validation.isKitchenOrInterior === false && (validation.confidence ?? 0) >= 0.7) {
+              return res.status(422).json({
+                error: 'invalid_photo',
+                message: 'La photo ne semble pas montrer une cuisine ou un espace intérieur adapté.',
+                reason: validation.reason || ''
+              });
+            }
           }
+        } else {
+          console.warn('Photo validation HTTP error:', validationResponse.status);
         }
+      } catch (validationError) {
+        // Fail open: if validation crashes, proceed with image generation
+        console.warn('Photo validation failed, proceeding anyway:', validationError.message);
       }
-    } catch (validationError) {
-      // Fail open: if validation crashes, proceed with image generation
-      console.warn('Photo validation failed, proceeding anyway:', validationError.message);
     }
 
     // 2. Fetch the model reference photo from ecocuisine.fr (with in-memory cache)
@@ -176,79 +231,60 @@ RÈGLES IMPÉRATIVES :
 5. PHOTORÉALISME : Le résultat doit être indiscernable d'une vraie photographie. L'éclairage doit être cohérent avec celui de la photo d'origine (lumière naturelle, ombres, reflets).
 6. FORMAT : L'image générée doit avoir exactement les mêmes proportions et la même résolution que l'image d'origine.`;
 
-    // 4. Call Gemini API
-    // ID GA du modèle (l'ancien `gemini-3.1-flash-image-preview` n'existe plus sous ce nom).
-    // Coût de référence : ~0,067 $ par image en 1K, ~0,045 $ en 0,5K.
-    const IMAGE_MODEL = process.env.IMAGE_MODEL || 'gemini-3.1-flash-image';
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${IMAGE_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    // 4. Call the Azure OpenAI image edit endpoint
+    // `images/edits` (et non `images/generations`) : c'est le seul qui accepte des images
+    // d'entrée. On en envoie deux — la photo de la pièce puis la photo du modèle.
+    const buildForm = (imageField) => {
+      const form = new FormData();
+      form.append('model', IMAGE_DEPLOYMENT);
+      form.append('prompt', prompt);
+      form.append('n', '1');
+      form.append('quality', IMAGE_QUALITY);
+      form.append('size', pickSize(userPhoto));
+      form.append(imageField, toBlob(userPhoto, userPhotoMimeType || 'image/jpeg'), 'piece.jpg');
+      form.append(imageField, toBlob(modelBase64, modelMimeType), 'modele.jpg');
+      return form;
+    };
 
-    const geminiResponse = await fetch(geminiUrl, {
+    const editsUrl = `${AZURE_ENDPOINT}/openai/v1/images/edits`;
+    const callAzure = (imageField) => fetch(editsUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                mimeType: userPhotoMimeType || 'image/jpeg',
-                data: userPhoto
-              }
-            },
-            {
-              inlineData: {
-                mimeType: modelMimeType,
-                data: modelBase64
-              }
-            },
-            { text: prompt }
-          ]
-        }],
-        generationConfig: {
-          responseModalities: ['IMAGE'],
-          thinkingConfig: { thinkingLevel: 'MINIMAL' },
-          imageConfig: { imageSize: '1K' }
-        }
-      })
+      headers: { 'api-key': AZURE_API_KEY },
+      body: buildForm(imageField)
     });
 
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error('Gemini API error:', geminiResponse.status, errorText);
+    let azureResponse = await callAzure('image[]');
+    // Selon la version d'API, le champ multipart s'appelle `image[]` ou `image`.
+    // Un 400 sur le premier nom vaut la peine d'un second essai avant d'abandonner.
+    if (azureResponse.status === 400) {
+      console.warn('[azure] retry with `image` field');
+      azureResponse = await callAzure('image');
+    }
+
+    if (!azureResponse.ok) {
+      const errorText = await azureResponse.text();
+      console.error('Azure OpenAI API error:', azureResponse.status, errorText);
       return res.status(502).json({
-        error: 'Gemini API error',
-        status: geminiResponse.status,
+        error: 'Azure OpenAI API error',
+        status: azureResponse.status,
         details: errorText
       });
     }
 
-    const result = await geminiResponse.json();
+    const result = await azureResponse.json();
 
     // 5. Extract the generated image
-    const candidates = result.candidates;
-    if (!candidates || candidates.length === 0) {
-      return res.status(502).json({ error: 'No candidates in Gemini response', result });
-    }
-
-    const parts = candidates[0].content?.parts;
-    if (!parts) {
-      return res.status(502).json({ error: 'No parts in Gemini response', result });
-    }
-
-    // Find the image part
-    const imagePart = parts.find(p => p.inlineData?.data);
-    if (!imagePart) {
-      // Maybe there's text instead of image
-      const textPart = parts.find(p => p.text);
+    const generated = result.data?.[0];
+    if (!generated?.b64_json) {
       return res.status(502).json({
         error: 'No image generated',
-        message: textPart?.text || 'Unknown error'
+        message: result.error?.message || 'Réponse Azure sans image'
       });
     }
 
     return res.status(200).json({
-      image: imagePart.inlineData.data,
-      mimeType: imagePart.inlineData.mimeType
+      image: generated.b64_json,
+      mimeType: generated.output_format ? `image/${generated.output_format}` : 'image/png'
     });
 
   } catch (error) {

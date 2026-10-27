@@ -20,16 +20,32 @@ Chantiers ouverts : `docs/BACKLOG.md`.
 
 ## Chaîne de génération (`api/simulate.js`)
 
-1. Validation de la photo uploadée par `gemini-2.0-flash` (réponse JSON `isKitchenOrInterior`) —
-   renvoie 422 `invalid_photo` si l'image n'est pas un intérieur, mais échoue « ouvert » (on
-   continue) si la validation plante.
+Fournisseur : Azure OpenAI, ressource `madameirma4agence` (API v1, clé dans l'en-tête `api-key`).
+
+1. Validation de la photo uploadée par un déploiement de chat multimodal Azure (réponse JSON
+   `isKitchenOrInterior`) — renvoie 422 `invalid_photo` si l'image n'est pas un intérieur, mais
+   échoue « ouvert » (on continue) si la validation plante. Étape sautée si
+   `AZURE_OPENAI_VALIDATION_DEPLOYMENT` n'est pas défini.
 2. Téléchargement de la photo du modèle de cuisine depuis `ecocuisine.fr`, avec cache mémoire
    par URL, valable pour les invocations chaudes d'une même instance Vercel.
-3. Génération par `gemini-3.1-flash-image-preview` avec un prompt d'architecte d'intérieur qui
-   verrouille la perspective, l'architecture de la pièce, l'éclairage et le format.
+3. Génération par `POST /openai/v1/images/edits` (déploiement `gpt-image-2.5-sunburst` par
+   défaut), en multipart avec les deux images d'entrée — photo de la pièce puis photo du modèle —
+   et un prompt d'architecte d'intérieur qui verrouille la perspective, l'architecture de la
+   pièce, l'éclairage et le format. Le format de sortie (1024x1024, 1536x1024 ou 1024x1536) est
+   choisi d'après le ratio de la photo d'origine.
 4. Réponse : image base64 + mimeType. Aucun stockage serveur des photos.
 
-`GEMINI_API_KEY` est une variable d'environnement Vercel, jamais committée.
+Variables d'environnement Vercel, jamais committées :
+
+| Variable | Rôle |
+| --- | --- |
+| `AZURE_OPENAI_ENDPOINT` | `https://madameirma4agence.openai.azure.com` |
+| `AZURE_OPENAI_KEY` | clé API de la ressource |
+| `AZURE_OPENAI_IMAGE_DEPLOYMENT` | déploiement image, défaut `gpt-image-2.5-sunburst` |
+| `AZURE_OPENAI_VALIDATION_DEPLOYMENT` | déploiement chat multimodal pour la validation (optionnel) |
+| `AZURE_OPENAI_IMAGE_QUALITY` | `low` / `medium` / `high`, défaut `medium` |
+| `AZURE_OPENAI_IMAGE_SIZE` | force une taille de sortie, sinon déduite du ratio |
+
 
 ## Principes produit à respecter
 
