@@ -151,7 +151,27 @@ export default async function handler(req, res) {
           },
           body: JSON.stringify({
             model: VALIDATION_MODEL,
-            max_tokens: 300,
+            // Haiku 5.5 réfléchit par défaut (effort `medium`) : `low` suffit pour une
+            // classification, et la réflexion compte dans max_tokens, d'où la marge.
+            max_tokens: 1024,
+            // Sorties structurées : la réponse est garantie conforme au schéma. Le
+            // préremplissage assistant ('{') renvoie un 400 sur les modèles Claude 5.
+            output_config: {
+              effort: 'low',
+              format: {
+                type: 'json_schema',
+                schema: {
+                  type: 'object',
+                  properties: {
+                    isKitchenOrInterior: { type: 'boolean' },
+                    confidence: { type: 'number' },
+                    reason: { type: 'string' }
+                  },
+                  required: ['isKitchenOrInterior', 'confidence', 'reason'],
+                  additionalProperties: false
+                }
+              }
+            },
             messages: [
               {
                 role: 'user',
@@ -179,13 +199,10 @@ Elle est INVALIDE si elle montre principalement :
 - un objet ou un meuble seul, sans contexte architectural ;
 - une capture d'écran, un dessin, un plan, un document.
 
-Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code, exactement dans ce format :
-{"isKitchenOrInterior": true, "confidence": 0.95, "reason": "Description courte de ce que montre l'image"}`
+Renseigne isKitchenOrInterior, confidence (entre 0 et 1) et reason (description courte de ce que montre l'image).`
                   }
                 ]
-              },
-              // Préremplissage : force la réponse à démarrer sur du JSON, sans phrase d'intro.
-              { role: 'assistant', content: '{' }
+              }
             ]
           })
         });
@@ -194,7 +211,7 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code,
           const validationResult = await validationResponse.json();
           const validationText = validationResult.content?.find(part => part.type === 'text')?.text;
           if (validationText) {
-            const validation = JSON.parse(`{${validationText}`);
+            const validation = JSON.parse(validationText);
             if (validation.isKitchenOrInterior === false && (validation.confidence ?? 0) >= 0.7) {
               return res.status(422).json({
                 error: 'invalid_photo',
@@ -204,7 +221,8 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans bloc de code,
             }
           }
         } else {
-          console.warn('Photo validation HTTP error:', validationResponse.status);
+          const errorText = await validationResponse.text();
+          console.warn('Photo validation HTTP error:', validationResponse.status, errorText.slice(0, 500));
         }
       } catch (validationError) {
         // Fail open: if validation crashes, proceed with image generation
